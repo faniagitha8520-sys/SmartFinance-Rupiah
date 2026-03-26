@@ -746,31 +746,28 @@ function HutangView({ S, c, tx, cardStyle, labelStyle }) {
         </div>
         <Bar value={c.totalBayar} max={c.totalHutang} color={S.accentGreen}/>
         <div style={{marginTop:12}}>
-          <div style={{fontSize:11,color:S.textDim,marginBottom:8,fontWeight:600}}>DETAIL PER ORANG/ENTITY</div>
-          {Object.entries(hutangByPerson).map(([person, txs]) => {
-            const masuk = txs.filter(t => t.tipe === "Hutang Masuk" || (t.kategori === "Hutang" && t.penghasilan > 0 && t.tipe !== "Bayar Hutang" && t.tipe !== "Hutang Catat")).reduce((s, t) => s + (t.penghasilan || 0), 0);
-            const bayar = txs.filter(t => t.tipe === "Bayar Hutang" || t.tipe === "Hutang Catat" || (t.kategori === "Hutang" && t.pengeluaran > 0 && t.tipe !== "Hutang Masuk")).reduce((s, t) => s + (t.pengeluaran || 0), 0);
-            const sisa = masuk - bayar;
-            const isBayar = (t) => t.tipe === "Bayar Hutang" || t.tipe === "Hutang Catat" || (t.kategori === "Hutang" && t.pengeluaran > 0 && t.tipe !== "Hutang Masuk");
-            const isMasuk = (t) => t.tipe === "Hutang Masuk" || (t.kategori === "Hutang" && t.penghasilan > 0 && !isBayar(t));
-            return (
-              <div key={person} style={{marginBottom:12,padding:"8px 10px",background:"rgba(255,255,255,0.03)",borderRadius:8,border:`1px solid ${S.border}`}}>
-                <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6}}>
-                  <span style={{fontWeight:700,fontSize:13}}>{person}</span>
-                  <span style={{fontFamily:"'DM Mono', monospace",fontWeight:700,fontSize:14,color:sisa>0?S.accentRed:S.accentGreen}}>{sisa>0?`Sisa: ${fmt(sisa)}`:"✅ Lunas"}</span>
+          <div style={{fontSize:11,color:S.textDim,marginBottom:8,fontWeight:600}}>DETAIL TRANSAKSI</div>
+          {(() => {
+            const hutangData = tx.filter(t => 
+              (t.kategori && t.kategori.toLowerCase() === "hutang") || 
+              t.tipe === "Hutang Masuk" || 
+              t.tipe === "Hutang Catat" || 
+              t.tipe === "Bayar Hutang"
+            ).sort((a,b) => (b.date || "").localeCompare(a.date || ""));
+            console.log('Data Hutang Terfilter:', hutangData);
+            return hutangData.length > 0 ? hutangData.map((t,i) => {
+              const isPayment = t.tipe === "Bayar Hutang" || t.tipe === "Hutang Catat" || t.pengeluaran > 0;
+              const amount = isPayment ? t.pengeluaran : t.penghasilan;
+              return (
+                <div key={t.id || i} style={{display:"flex",justifyContent:"space-between",padding:"6px 0",borderBottom:`1px solid ${S.border}`,fontSize:12}}>
+                  <span style={{color:isPayment?S.accentGreen:S.text}}>{t.date} — {t.item} ({t.catatan || "-"})</span>
+                  <span style={{fontFamily:"'DM Mono', monospace",fontWeight:600,color:isPayment?S.accentGreen:S.accentRed}}>
+                    {isPayment ? `-${fmt(amount)}` : `+${fmt(amount)}`}
+                  </span>
                 </div>
-                {txs.sort((a,b) => (b.date||"").localeCompare(a.date||"")).map((t,i) => (
-                  <div key={i} style={{display:"flex",justifyContent:"space-between",padding:"4px 0",borderBottom:`1px solid ${S.border}`,fontSize:11}}>
-                    <span style={{color:isBayar(t)?S.accentGreen:S.text}}>{t.date} — {t.item} <span style={{color:S.textDim,fontSize:10}}>({t.tipe})</span></span>
-                    <span style={{fontFamily:"'DM Mono', monospace",fontWeight:600,color:isBayar(t)?S.accentGreen:S.accentRed}}>
-                      {isMasuk(t)?`+${fmt(t.penghasilan)}`:`-${fmt(t.pengeluaran)}`}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            );
-          })}
-          {Object.keys(hutangByPerson).length === 0 && <div style={{color:S.textMuted,fontSize:12}}>Tidak ada hutang tercatat</div>}
+              );
+            }) : <div style={{color:S.textMuted,fontSize:12}}>Tidak ada hutang tercatat</div>;
+          })()}
         </div>
       </div>
       <div style={cardStyle}>
