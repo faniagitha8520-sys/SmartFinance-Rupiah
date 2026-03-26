@@ -254,11 +254,15 @@ export default function App() {
       });
     });
 
-    // Hutang: filter by tipe OR kategori (handles mismatched tipe input)
-    const hutangMasuk = tx.filter(t => t.tipe === "Hutang Masuk" || (t.kategori === "Hutang" && t.penghasilan > 0 && t.tipe !== "Bayar Hutang" && t.tipe !== "Hutang Catat"));
-    const bayarHutang = tx.filter(t => t.tipe === "Bayar Hutang" || t.tipe === "Hutang Catat" || (t.kategori === "Hutang" && t.pengeluaran > 0 && t.tipe !== "Hutang Masuk"));
-    const totalHutang = hutangMasuk.reduce((s, t) => s + (t.penghasilan || 0), 0);
-    const totalBayar = bayarHutang.reduce((s, t) => s + (t.pengeluaran || 0), 0);
+    // Hutang: handle inconsistent input columns (hutang masuk kadang masuk ke pengeluaran, bayar kadang tipe/kategori campur)
+    const getHutangMasukAmount = (t) => Math.max(Number(t.penghasilan) || 0, Number(t.pengeluaran) || 0);
+    const getBayarHutangAmount = (t) => Math.max(Number(t.pengeluaran) || 0, Number(t.penghasilan) || 0);
+    const isHutangMasuk = (t) => t.tipe === "Hutang Masuk" || (t.kategori === "Hutang" && getHutangMasukAmount(t) > 0 && t.tipe !== "Bayar Hutang" && t.tipe !== "Hutang Catat");
+    const isBayarHutang = (t) => t.tipe === "Bayar Hutang" || t.tipe === "Hutang Catat" || (t.kategori === "Hutang" && (Number(t.pengeluaran) || 0) > 0 && t.tipe !== "Hutang Masuk");
+    const hutangMasuk = tx.filter(isHutangMasuk);
+    const bayarHutang = tx.filter(isBayarHutang);
+    const totalHutang = hutangMasuk.reduce((s, t) => s + getHutangMasukAmount(t), 0);
+    const totalBayar = bayarHutang.reduce((s, t) => s + getBayarHutangAmount(t), 0);
     const sisaHutang = totalHutang - totalBayar;
 
     // Piutang: filter by tipe OR kategori (handles mismatched tipe input)
@@ -716,10 +720,16 @@ function KirimView({ S, c, settings, setSettings, cardStyle, labelStyle, bigNum 
 
 // ==================== HUTANG/PIUTANG ====================
 function HutangView({ S, c, tx, cardStyle, labelStyle }) {
-  const hutangDetail = [...(c.hutangMasuk || [])].sort((a,b) => (b.date || "").localeCompare(a.date || ""));
+  const getHutangPersonKey = (t) => t.catatan || t.item || "Lainnya";
+  const getHutangMasukAmount = (t) => Math.max(Number(t.penghasilan) || 0, Number(t.pengeluaran) || 0);
+  const getBayarHutangAmount = (t) => Math.max(Number(t.pengeluaran) || 0, Number(t.penghasilan) || 0);
+  const isHutangMasuk = (t) => t.tipe === "Hutang Masuk" || (t.kategori === "Hutang" && getHutangMasukAmount(t) > 0 && t.tipe !== "Bayar Hutang" && t.tipe !== "Hutang Catat");
+  const isBayarHutang = (t) => t.tipe === "Bayar Hutang" || t.tipe === "Hutang Catat" || (t.kategori === "Hutang" && (Number(t.pengeluaran) || 0) > 0 && t.tipe !== "Hutang Masuk");
+
+  const hutangAll = tx.filter(t => isHutangMasuk(t) || isBayarHutang(t));
   const hutangByPerson = {};
-  hutangDetail.forEach(t => {
-    const key = t.catatan || t.item || "Lainnya";
+  hutangAll.forEach(t => {
+    const key = getHutangPersonKey(t);
     if (!hutangByPerson[key]) hutangByPerson[key] = [];
     hutangByPerson[key].push(t);
   });
@@ -747,21 +757,30 @@ function HutangView({ S, c, tx, cardStyle, labelStyle }) {
         <div style={{marginTop:4}}>
           <div style={{fontSize:11,color:S.textDim,marginBottom:8,fontWeight:600}}>DETAIL PER ORANG</div>
           {Object.entries(hutangByPerson).map(([person, txs]) => {
-            const total = txs.reduce((s, t) => s + (t.penghasilan || 0), 0);
+            const totalMasuk = txs.filter(isHutangMasuk).reduce((s, t) => s + getHutangMasukAmount(t), 0);
+            const totalDibayar = txs.filter(isBayarHutang).reduce((s, t) => s + getBayarHutangAmount(t), 0);
+            const sisa = totalMasuk - totalDibayar;
             return (
               <div key={person} style={{marginBottom:12,padding:"8px 10px",background:"rgba(255,255,255,0.03)",borderRadius:8,border:`1px solid ${S.border}`}}>
-                <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6}}>
+                <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:4}}>
                   <span style={{fontWeight:700,fontSize:13}}>{person}</span>
-                  <span style={{fontFamily:"'DM Mono', monospace",fontWeight:700,fontSize:14,color:S.accentRed}}>{fmt(total)}</span>
+                  <span style={{fontFamily:"'DM Mono', monospace",fontWeight:700,fontSize:14,color:S.accentRed}}>{fmt(sisa)}</span>
                 </div>
-                {txs.sort((a,b) => (b.date||"").localeCompare(a.date||"")).map((t,i) => (
-                  <div key={t.id || i} style={{display:"flex",justifyContent:"space-between",padding:"4px 0",borderBottom:`1px solid ${S.border}`,fontSize:11}}>
-                    <span style={{color:S.text}}>{t.date} — {t.item} <span style={{color:S.textDim,fontSize:10}}>({t.tipe || "Hutang Masuk"})</span></span>
-                    <span style={{fontFamily:"'DM Mono', monospace",fontWeight:600,color:S.accentRed}}>
-                      -{fmt(t.penghasilan || 0)}
-                    </span>
-                  </div>
-                ))}
+                <div style={{fontSize:10,color:S.textDim,marginBottom:6}}>
+                  Sudah Dibayar: <span style={{fontFamily:"'DM Mono', monospace",color:S.accentGreen,fontWeight:700}}>{fmt(totalDibayar)}</span>
+                </div>
+                {txs.sort((a,b) => (b.date||"").localeCompare(a.date||"")).map((t,i) => {
+                  const isPayment = isBayarHutang(t);
+                  const amount = isPayment ? getBayarHutangAmount(t) : getHutangMasukAmount(t);
+                  return (
+                    <div key={t.id || i} style={{display:"flex",justifyContent:"space-between",padding:"4px 0",borderBottom:`1px solid ${S.border}`,fontSize:11}}>
+                      <span style={{color:isPayment?S.accentGreen:S.text}}>{t.date} — {t.item} <span style={{color:S.textDim,fontSize:10}}>({t.tipe || (isPayment ? "Bayar Hutang" : "Hutang Masuk")})</span></span>
+                      <span style={{fontFamily:"'DM Mono', monospace",fontWeight:600,color:isPayment?S.accentGreen:S.accentRed}}>
+                        {isPayment ? `+${fmt(amount)}` : `-${fmt(amount)}`}
+                      </span>
+                    </div>
+                  );
+                })}
               </div>
             );
           })}
