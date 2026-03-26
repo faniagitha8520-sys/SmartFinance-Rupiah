@@ -1,0 +1,190 @@
+import { useState, useMemo, useRef } from "react";
+import { fmt, MONTHS, TIPE_LIST, normalizeDebtType } from "../utils";
+import { Card, Label, EmptyState } from "./UI";
+
+const inp = "w-full bg-white/[0.03] border border-white/[0.08] rounded-xl px-3 py-2.5 text-sm text-white placeholder-slate-600 outline-none focus:border-pink-500/40 focus:ring-1 focus:ring-pink-500/20 transition-all font-sans";
+const inpMono = inp + " font-mono";
+
+export default function InputView({ tx, addTx, updateTx, deleteTx, settings, lists }) {
+  const empty = { date: new Date().toISOString().slice(0, 10), kategori: "", item: "", penghasilan: 0, pengeluaran: 0, akun: "Cash", catatan: "", bulan: MONTHS[new Date().getMonth()], tipe: "Pengeluaran" };
+  const [form, setForm] = useState(empty);
+  const [filter, setFilter] = useState("");
+  const [filterMode, setFilterMode] = useState("all");
+  const [showForm, setShowForm] = useState(false);
+  const [editId, setEditId] = useState(null);
+  const [showOCR, setShowOCR] = useState(false);
+  const [ocrLoading, setOcrLoading] = useState(false);
+  const [ocrPreview, setOcrPreview] = useState([]);
+  const [csvText, setCsvText] = useState("");
+  const [ocrMode, setOcrMode] = useState("photo");
+  const fileRef = useRef(null);
+
+  const filtered = useMemo(() => {
+    const f = filter.toLowerCase();
+    const isHutangTx = (t) => t.tipe === "Hutang Masuk" || t.tipe === "Bayar Hutang" || t.tipe === "Hutang Catat" || t.kategori === "Hutang";
+    const isPiutangTx = (t) => t.tipe === "Piutang Keluar" || t.tipe === "Piutang Masuk" || t.kategori === "Piutang";
+    const modeFiltered = tx.filter((t) => {
+      if (filterMode === "hutang") return isHutangTx(t);
+      if (filterMode === "piutang") return isPiutangTx(t);
+      return true;
+    });
+    return [...(f ? modeFiltered.filter(t => t.item?.toLowerCase().includes(f) || t.kategori?.toLowerCase().includes(f) || t.catatan?.toLowerCase().includes(f)) : modeFiltered)].reverse();
+  }, [tx, filter, filterMode]);
+
+  const handleSubmit = () => {
+    if (!form.item || !form.kategori) return;
+    const normalizedForm = { ...form, tipe: normalizeDebtType(form.tipe) };
+    if (editId) { updateTx(editId, normalizedForm); setEditId(null); } else { addTx(normalizedForm); }
+    setForm(empty); setShowForm(false);
+  };
+  const startEdit = (t) => { setForm({ date: t.date, kategori: t.kategori, item: t.item, penghasilan: t.penghasilan, pengeluaran: t.pengeluaran, akun: t.akun, catatan: t.catatan, bulan: t.bulan, tipe: normalizeDebtType(t.tipe) }); setEditId(t.id); setShowForm(true); setShowOCR(false); };
+  const cancelEdit = () => { setEditId(null); setForm(empty); setShowForm(false); };
+  const parseCSV = (text) => { const lines = text.trim().split("\n").filter(l => l.trim()); const parsed = []; for (const line of lines) { const cols = line.split(",").map(c => c.trim()); if (cols.length < 5 || cols[0].toLowerCase() === "tanggal") continue; parsed.push({ date: cols[0] || new Date().toISOString().slice(0, 10), kategori: cols[1] || "", item: cols[2] || "", penghasilan: Number(cols[3]) || 0, pengeluaran: Number(cols[4]) || 0, akun: cols[5] || "Cash", catatan: cols[6] || "", bulan: cols[7] || MONTHS[new Date().getMonth()], tipe: normalizeDebtType(cols[8] || "Pengeluaran") }); } return parsed; };
+  const handleCSVImport = () => { const parsed = parseCSV(csvText); if (parsed.length === 0) return; setOcrPreview(parsed); };
+  const handlePhotoUpload = async (e) => {
+    const file = e.target.files?.[0]; if (!file) return;
+    const apiKey = settings.anthropicKey; if (!apiKey) { alert("⚠️ API Key Anthropic belum diisi! Buka Settings → masukkan API key."); return; }
+    setOcrLoading(true);
+    try {
+      const base64 = await new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(r.result.split(",")[1]); r.onerror = () => rej(new Error("Read failed")); r.readAsDataURL(file); });
+      const resp = await fetch("/api/ocr", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ image: base64, mediaType: file.type || "image/jpeg", apiKey }) });
+      const data = await resp.json();
+      if (data.transactions) setOcrPreview(data.transactions); else if (data.error) alert("OCR Error: " + data.error);
+    } catch (err) { alert("Error: " + err.message); } finally { setOcrLoading(false); if (fileRef.current) fileRef.current.value = ""; }
+  };
+  const confirmPreview = () => { ocrPreview.forEach(t => addTx(t)); setOcrPreview([]); setCsvText(""); setShowOCR(false); };
+
+  return (
+    <div className="space-y-4 animate-fade-in-up">
+      <div className="flex justify-between items-center flex-wrap gap-3">
+        <div>
+          <h2 className="text-xl font-bold">📝 Input Data</h2>
+          <p className="text-sm text-slate-500">{tx.length} transaksi</p>
+        </div>
+        <div className="flex gap-2">
+          <button onClick={() => { setShowOCR(!showOCR); setShowForm(false); }}
+            className={`px-4 py-2 rounded-xl text-sm font-bold transition-all ${showOCR ? 'bg-pink-500 text-white shadow-lg shadow-pink-900/30' : 'bg-purple-500/10 text-purple-400 border border-purple-500/20 hover:bg-purple-500/20'}`}>
+            {showOCR ? "✕ Tutup" : "📷 Scan Struk"}
+          </button>
+          <button onClick={() => { setShowForm(!showForm); setShowOCR(false); if (editId) cancelEdit(); }}
+            className="px-4 py-2 bg-gradient-to-r from-pink-600 to-pink-500 hover:from-pink-500 hover:to-pink-400 text-white rounded-xl text-sm font-bold shadow-lg shadow-pink-900/25 transition-all active:scale-95">
+            {showForm && !editId ? "✕ Tutup" : "+ Manual"}
+          </button>
+        </div>
+      </div>
+
+      {/* OCR Section */}
+      {showOCR && (
+        <Card className="border-purple-500/20">
+          <Label className="mb-3">📷 Scan Struk / Import CSV</Label>
+          <div className="flex gap-2 mb-4">
+            {[{k:"photo",l:"📷 Upload Foto"},{k:"csv",l:"📋 Paste CSV"}].map(b=>(
+              <button key={b.k} onClick={()=>setOcrMode(b.k)}
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all border ${ocrMode===b.k ? 'bg-pink-500/12 border-pink-500/30 text-pink-400' : 'bg-transparent border-white/[0.06] text-slate-500 hover:text-white'}`}>{b.l}</button>
+            ))}
+          </div>
+          {ocrMode === "photo" && (
+            <div>
+              <p className="text-xs text-slate-500 mb-2">Upload foto struk → Claude OCR → auto-parse ke transaksi</p>
+              <input ref={fileRef} type="file" accept="image/*" capture="environment" onChange={handlePhotoUpload} className="hidden" />
+              <button onClick={() => fileRef.current?.click()} disabled={ocrLoading}
+                className={`px-6 py-3 rounded-xl font-bold text-sm text-white transition-all ${ocrLoading ? 'bg-slate-700 cursor-wait' : 'bg-gradient-to-r from-purple-600 to-pink-500 hover:from-purple-500 hover:to-pink-400 shadow-lg shadow-purple-900/25'}`}>
+                {ocrLoading ? "⏳ Processing..." : "📷 Ambil Foto / Upload"}
+              </button>
+            </div>
+          )}
+          {ocrMode === "csv" && (
+            <div>
+              <p className="text-xs text-slate-500 mb-2">Format: Tanggal,Kategori,Item,Penghasilan,Pengeluaran,Akun,Catatan,Bulan,Tipe</p>
+              <textarea value={csvText} onChange={e => setCsvText(e.target.value)} placeholder="2026-03-20,Jajan,Roll Cake,0,198,Cash,Snack,Maret,Pengeluaran" className={`${inpMono} h-28 resize-y text-[11px]`} />
+              <button onClick={handleCSVImport} className="mt-2 px-5 py-2.5 bg-gradient-to-r from-pink-600 to-pink-500 text-white rounded-xl font-bold text-sm transition-all hover:from-pink-500 hover:to-pink-400">📋 Parse CSV</button>
+            </div>
+          )}
+          {ocrPreview.length > 0 && (
+            <div className="mt-4">
+              <p className="text-sm font-bold text-pink-400 mb-2">✅ {ocrPreview.length} transaksi ditemukan:</p>
+              <div className="max-h-60 overflow-y-auto space-y-1">
+                {ocrPreview.map((t,i) => (
+                  <div key={i} className="flex items-center gap-2 px-3 py-1.5 bg-white/[0.02] rounded-lg text-[11px]">
+                    <span className="w-16 text-slate-500 font-mono shrink-0">{t.date?.slice(5)}</span>
+                    <span className="w-16 text-pink-400 font-semibold shrink-0">{t.kategori}</span>
+                    <span className="flex-1 truncate">{t.item}</span>
+                    <span className={`w-16 text-right font-mono font-semibold shrink-0 ${t.pengeluaran > 0 ? 'text-pink-400' : 'text-emerald-400'}`}>{t.pengeluaran > 0 ? `-${fmt(t.pengeluaran)}` : `+${fmt(t.penghasilan)}`}</span>
+                    <button onClick={() => setOcrPreview(prev => prev.filter((_, j) => j !== i))} className="text-pink-400 hover:text-pink-300 text-[10px]">✕</button>
+                  </div>
+                ))}
+              </div>
+              <div className="flex gap-2 mt-3">
+                <button onClick={confirmPreview} className="px-5 py-2.5 bg-gradient-to-r from-pink-600 to-pink-500 text-white rounded-xl font-bold text-sm hover:from-pink-500 hover:to-pink-400">✅ Simpan Semua ({ocrPreview.length})</button>
+                <button onClick={() => setOcrPreview([])} className="px-4 py-2 bg-pink-500/10 border border-pink-500/20 text-pink-400 rounded-xl text-xs font-semibold">Batal</button>
+              </div>
+            </div>
+          )}
+        </Card>
+      )}
+
+      {/* Manual Form */}
+      {showForm && (
+        <Card className={editId ? "border-amber-500/30" : "border-pink-500/20"}>
+          <Label className={`mb-3 ${editId ? 'text-amber-400' : ''}`}>{editId ? "✏️ Edit Transaksi" : "Transaksi Baru"}</Label>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <div><div className="text-[11px] text-slate-500 mb-1">Tanggal</div><input type="date" value={form.date} onChange={e => setForm({...form, date: e.target.value})} className={inp} /></div>
+            <div><div className="text-[11px] text-slate-500 mb-1">Tipe</div><select value={form.tipe} onChange={e => setForm({...form, tipe: e.target.value})} className={inp}>{TIPE_LIST.map(t => <option key={t} value={t}>{t}</option>)}</select></div>
+            <div><div className="text-[11px] text-slate-500 mb-1">Kategori</div><select value={form.kategori} onChange={e => setForm({...form, kategori: e.target.value})} className={inp}><option value="">— Pilih —</option>{lists.kategoriAll.map(k => <option key={k} value={k}>{k}</option>)}</select></div>
+            <div><div className="text-[11px] text-slate-500 mb-1">Akun</div><select value={form.akun} onChange={e => setForm({...form, akun: e.target.value})} className={inp}>{lists.akunList.map(a => <option key={a} value={a}>{a}</option>)}</select></div>
+            <div><div className="text-[11px] text-slate-500 mb-1">Item</div><input value={form.item} onChange={e => setForm({...form, item: e.target.value})} placeholder="Nama item..." className={inp} /></div>
+            <div><div className="text-[11px] text-slate-500 mb-1">Bulan</div><select value={form.bulan} onChange={e => setForm({...form, bulan: e.target.value})} className={inp}>{MONTHS.map(m => <option key={m} value={m}>{m}</option>)}</select></div>
+            <div><div className="text-[11px] text-slate-500 mb-1">Penghasilan (Rp)</div><input type="number" value={form.penghasilan||""} onChange={e => setForm({...form, penghasilan: Number(e.target.value)||0})} className={inpMono} placeholder="0" /></div>
+            <div><div className="text-[11px] text-slate-500 mb-1">Pengeluaran (Rp)</div><input type="number" value={form.pengeluaran||""} onChange={e => setForm({...form, pengeluaran: Number(e.target.value)||0})} className={inpMono} placeholder="0" /></div>
+          </div>
+          <div className="mt-3"><div className="text-[11px] text-slate-500 mb-1">Catatan</div><input value={form.catatan} onChange={e => setForm({...form, catatan: e.target.value})} placeholder="Optional..." className={inp} /></div>
+          <div className="flex gap-2 mt-4">
+            <button onClick={handleSubmit} className={`px-6 py-2.5 rounded-xl font-bold text-sm text-white transition-all active:scale-95 ${editId ? 'bg-amber-500 hover:bg-amber-400' : 'bg-gradient-to-r from-pink-600 to-pink-500 hover:from-pink-500 hover:to-pink-400 shadow-lg shadow-pink-900/25'}`}>{editId ? "✏️ Update" : "💾 Simpan"}</button>
+            {editId && <button onClick={cancelEdit} className="px-4 py-2 bg-pink-500/10 border border-pink-500/20 text-pink-400 rounded-xl text-xs font-semibold">Batal</button>}
+          </div>
+        </Card>
+      )}
+
+      {/* Filter tabs */}
+      <div className="flex flex-wrap gap-2">
+        {[
+          { key: "all", label: `Semua (${tx.length})` },
+          { key: "hutang", label: `Hutang (${tx.filter(t => t.tipe === "Hutang Masuk" || t.tipe === "Bayar Hutang" || t.tipe === "Hutang Catat" || t.kategori === "Hutang").length})` },
+          { key: "piutang", label: `Piutang (${tx.filter(t => t.tipe === "Piutang Keluar" || t.tipe === "Piutang Masuk" || t.kategori === "Piutang").length})` },
+        ].map(btn => (
+          <button key={btn.key} onClick={() => setFilterMode(btn.key)}
+            className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all border ${filterMode === btn.key ? 'bg-pink-500/12 border-pink-500/30 text-pink-400' : 'border-white/[0.06] text-slate-500 hover:text-white'}`}>
+            {btn.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Search */}
+      <input value={filter} onChange={e => setFilter(e.target.value)} placeholder="🔍 Cari transaksi..."
+        className="w-full bg-white/[0.03] border border-white/[0.06] rounded-2xl px-5 py-3 text-sm text-white placeholder-slate-600 outline-none focus:border-pink-500/30 transition-all" />
+
+      {/* Transaction list */}
+      {filtered.length === 0 ? (
+        <EmptyState icon="📭" title="Belum ada transaksi" sub="Tap tombol + Manual untuk menambahkan" />
+      ) : (
+        <div className="space-y-0.5">
+          {filtered.slice(0, 100).map((t, i) => (
+            <div key={t.id || i} onClick={() => startEdit(t)}
+              className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs cursor-pointer transition-all group ${editId === t.id ? 'bg-amber-500/10 border border-amber-500/30' : 'bg-white/[0.015] hover:bg-white/[0.04] border border-transparent'}`}>
+              <span className="w-[70px] text-slate-500 font-mono shrink-0">{t.date?.slice(5)}</span>
+              <span className="w-[70px] text-pink-400 font-semibold text-[11px] shrink-0">{t.kategori}</span>
+              <span className="flex-1 truncate">{t.item}</span>
+              <span className={`w-[70px] text-right font-mono font-semibold shrink-0 ${t.penghasilan > 0 ? 'text-emerald-400' : t.pengeluaran > 0 ? 'text-pink-400' : 'text-slate-600'}`}>
+                {t.penghasilan > 0 ? `+${fmt(t.penghasilan)}` : t.pengeluaran > 0 ? `-${fmt(t.pengeluaran)}` : "—"}
+              </span>
+              <span className="w-[80px] text-right text-slate-600 text-[10px] shrink-0 hidden sm:block">{normalizeDebtType(t.tipe)}</span>
+              <span className="w-[55px] text-right text-slate-600 text-[10px] shrink-0 hidden sm:block">{t.akun}</span>
+              <button onClick={(e) => { e.stopPropagation(); deleteTx(t.id); }}
+                className="opacity-0 group-hover:opacity-100 text-pink-400 hover:text-pink-300 transition-opacity text-[11px] shrink-0">✕</button>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}

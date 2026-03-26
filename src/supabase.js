@@ -1,10 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 
-// =====================================================
-// 🔥 GANTI INI DENGAN SUPABASE CREDENTIALS LO
-// Supabase Dashboard → Settings → API
-// =====================================================
-const SUPABASE_URL = "https://bvrtunobcfrtzzipgivl.supabase.co";
-const SUPABASE_ANON_KEY = "sb_publishable_kufk62lRMxPmW9xLTRAPZg_VNNtUbZi";
+// Sekarang dia baca otomatis dari file .env lu
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+export const supabase = createClient(supabaseUrl, supabaseAnonKey);
