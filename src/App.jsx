@@ -717,6 +717,12 @@ function KirimView({ S, c, settings, setSettings, cardStyle, labelStyle, bigNum 
 // ==================== HUTANG/PIUTANG ====================
 function HutangView({ S, c, tx, cardStyle, labelStyle }) {
   const hutangDetail = [...(c.hutangMasuk || [])].sort((a,b) => (b.date || "").localeCompare(a.date || ""));
+  const hutangByPerson = {};
+  hutangDetail.forEach(t => {
+    const key = t.catatan || t.item || "Lainnya";
+    if (!hutangByPerson[key]) hutangByPerson[key] = [];
+    hutangByPerson[key].push(t);
+  });
 
   // Group piutang by catatan (nama orang)
   const piutangAll = tx.filter(t => t.kategori === "Piutang" || t.tipe === "Piutang Keluar" || t.tipe === "Piutang Masuk");
@@ -738,24 +744,28 @@ function HutangView({ S, c, tx, cardStyle, labelStyle }) {
           <div><div style={{fontSize:11,color:S.textDim}}>Sisa</div><div style={{fontSize:18,fontWeight:700,fontFamily:"'DM Mono', monospace",color:S.accentRed}}>{fmt(c.sisaHutang)}</div></div>
         </div>
         <Bar value={c.totalBayar} max={c.totalHutang} color={S.accentGreen}/>
-        <div style={{marginTop:12}}>
-          <div style={{fontSize:11,color:S.textDim,marginBottom:8,fontWeight:600}}>DETAIL TRANSAKSI</div>
-          {hutangDetail.map((t, i) => (
-            <div key={t.id || i} style={{marginBottom:12,padding:"8px 10px",background:"rgba(255,255,255,0.03)",borderRadius:8,border:`1px solid ${S.border}`}}>
-              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6,gap:8}}>
-                <span style={{color:S.textDim,fontSize:11,fontFamily:"'DM Mono', monospace"}}>{t.date || "-"}</span>
-                <span style={{fontFamily:"'DM Mono', monospace",fontWeight:700,fontSize:14,color:S.accentRed}}>{fmt(t.penghasilan || 0)}</span>
-              </div>
-              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:8,fontSize:12}}>
-                <div style={{display:"flex",flexDirection:"column",gap:4}}>
-                  <span style={{fontWeight:700}}>{t.item || "-"}</span>
-                  <span style={{color:S.textDim,fontSize:11}}>{t.catatan || "-"}</span>
+        <div style={{marginTop:4}}>
+          <div style={{fontSize:11,color:S.textDim,marginBottom:8,fontWeight:600}}>DETAIL PER ORANG</div>
+          {Object.entries(hutangByPerson).map(([person, txs]) => {
+            const total = txs.reduce((s, t) => s + (t.penghasilan || 0), 0);
+            return (
+              <div key={person} style={{marginBottom:12,padding:"8px 10px",background:"rgba(255,255,255,0.03)",borderRadius:8,border:`1px solid ${S.border}`}}>
+                <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6}}>
+                  <span style={{fontWeight:700,fontSize:13}}>{person}</span>
+                  <span style={{fontFamily:"'DM Mono', monospace",fontWeight:700,fontSize:14,color:S.accentRed}}>{fmt(total)}</span>
                 </div>
-                <span style={{color:S.textDim,fontSize:10}}>({t.tipe || "Hutang"})</span>
+                {txs.sort((a,b) => (b.date||"").localeCompare(a.date||"")).map((t,i) => (
+                  <div key={t.id || i} style={{display:"flex",justifyContent:"space-between",padding:"4px 0",borderBottom:`1px solid ${S.border}`,fontSize:11}}>
+                    <span style={{color:S.text}}>{t.date} — {t.item} <span style={{color:S.textDim,fontSize:10}}>({t.tipe || "Hutang Masuk"})</span></span>
+                    <span style={{fontFamily:"'DM Mono', monospace",fontWeight:600,color:S.accentRed}}>
+                      -{fmt(t.penghasilan || 0)}
+                    </span>
+                  </div>
+                ))}
               </div>
-            </div>
-          ))}
-          {hutangDetail.length === 0 && <div style={{color:S.textMuted,fontSize:12}}>Tidak ada hutang tercatat</div>}
+            );
+          })}
+          {Object.keys(hutangByPerson).length === 0 && <div style={{color:S.textMuted,fontSize:12}}>Tidak ada hutang tercatat</div>}
         </div>
       </div>
       <div style={cardStyle}>
