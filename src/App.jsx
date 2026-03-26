@@ -539,6 +539,7 @@ function InputView({ S, tx, addTx, updateTx, deleteTx, settings, lists, cardStyl
   const empty = { date: new Date().toISOString().slice(0, 10), kategori: "", item: "", penghasilan: 0, pengeluaran: 0, akun: "Cash", catatan: "", bulan: MONTHS[new Date().getMonth()], tipe: "Pengeluaran" };
   const [form, setForm] = useState(empty);
   const [filter, setFilter] = useState("");
+  const [filterMode, setFilterMode] = useState("all");
   const [showForm, setShowForm] = useState(false);
   const [editId, setEditId] = useState(null);
   const [showOCR, setShowOCR] = useState(false);
@@ -550,8 +551,15 @@ function InputView({ S, tx, addTx, updateTx, deleteTx, settings, lists, cardStyl
 
   const filtered = useMemo(() => {
     const f = filter.toLowerCase();
-    return [...(f ? tx.filter(t => t.item.toLowerCase().includes(f) || t.kategori.toLowerCase().includes(f) || t.catatan.toLowerCase().includes(f)) : tx)].reverse();
-  }, [tx, filter]);
+    const isHutangTx = (t) => t.tipe === "Hutang Masuk" || t.tipe === "Bayar Hutang" || t.tipe === "Hutang Catat" || t.kategori === "Hutang";
+    const isPiutangTx = (t) => t.tipe === "Piutang Keluar" || t.tipe === "Piutang Masuk" || t.kategori === "Piutang";
+    const modeFiltered = tx.filter((t) => {
+      if (filterMode === "hutang") return isHutangTx(t);
+      if (filterMode === "piutang") return isPiutangTx(t);
+      return true;
+    });
+    return [...(f ? modeFiltered.filter(t => t.item.toLowerCase().includes(f) || t.kategori.toLowerCase().includes(f) || t.catatan.toLowerCase().includes(f)) : modeFiltered)].reverse();
+  }, [tx, filter, filterMode]);
 
   const handleSubmit = () => {
     if (!form.item || !form.kategori) return;
@@ -619,7 +627,32 @@ function InputView({ S, tx, addTx, updateTx, deleteTx, settings, lists, cardStyl
           </div>
         </div>
       )}
-      <input value={filter} onChange={e => setFilter(e.target.value)} placeholder="🔍 Cari transaksi..." style={{ ...cardStyle, fontSize: 13, outline: "none", fontFamily: "'DM Sans', sans-serif" }} />
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+        {[
+          { key: "all", label: `Semua (${tx.length})`, color: S.accent },
+          { key: "hutang", label: `Hutang (${tx.filter(t => t.tipe === "Hutang Masuk" || t.tipe === "Bayar Hutang" || t.tipe === "Hutang Catat" || t.kategori === "Hutang").length})`, color: S.accentRed },
+          { key: "piutang", label: `Piutang (${tx.filter(t => t.tipe === "Piutang Keluar" || t.tipe === "Piutang Masuk" || t.kategori === "Piutang").length})`, color: S.accentGreen },
+        ].map(btn => (
+          <button
+            key={btn.key}
+            onClick={() => setFilterMode(btn.key)}
+            style={{
+              background: filterMode === btn.key ? `${btn.color}22` : "transparent",
+              border: `1px solid ${filterMode === btn.key ? btn.color : S.border}`,
+              borderRadius: 999,
+              padding: "6px 12px",
+              color: filterMode === btn.key ? btn.color : S.textDim,
+              fontSize: 12,
+              fontWeight: 700,
+              cursor: "pointer",
+              fontFamily: "'DM Sans', sans-serif"
+            }}
+          >
+            {btn.label}
+          </button>
+        ))}
+      </div>
+      <input value={filter} onChange={e => setFilter(e.target.value)} placeholder={filterMode === "all" ? "🔍 Cari transaksi..." : `🔍 Cari ${filterMode}...`} style={{ ...cardStyle, fontSize: 13, outline: "none", fontFamily: "'DM Sans', sans-serif" }} />
       <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
         {filtered.slice(0, 100).map((t, i) => (
           <div key={t.id || i} style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 14px", background: editId === t.id ? "rgba(234,179,8,0.08)" : i % 2 === 0 ? S.card : S.cardAlt, borderRadius: 8, fontSize: 12, border: editId === t.id ? "1px solid rgba(234,179,8,0.3)" : "1px solid transparent", cursor: "pointer", transition: "all 0.15s" }} onClick={() => startEdit(t)}>
