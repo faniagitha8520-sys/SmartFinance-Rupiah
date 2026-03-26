@@ -716,14 +716,7 @@ function KirimView({ S, c, settings, setSettings, cardStyle, labelStyle, bigNum 
 
 // ==================== HUTANG/PIUTANG ====================
 function HutangView({ S, c, tx, cardStyle, labelStyle }) {
-  // Group hutang by catatan (nama orang/entity)
-  const hutangAll = tx.filter(t => t.kategori === "Hutang" || t.tipe === "Hutang Masuk" || t.tipe === "Hutang Catat" || t.tipe === "Bayar Hutang");
-  const hutangByPerson = {};
-  hutangAll.forEach(t => {
-    const key = t.catatan || t.item || "Lainnya";
-    if (!hutangByPerson[key]) hutangByPerson[key] = [];
-    hutangByPerson[key].push(t);
-  });
+  const hutangDetail = [...(c.hutangMasuk || [])].sort((a,b) => (b.date || "").localeCompare(a.date || ""));
 
   // Group piutang by catatan (nama orang)
   const piutangAll = tx.filter(t => t.kategori === "Piutang" || t.tipe === "Piutang Keluar" || t.tipe === "Piutang Masuk");
@@ -747,27 +740,22 @@ function HutangView({ S, c, tx, cardStyle, labelStyle }) {
         <Bar value={c.totalBayar} max={c.totalHutang} color={S.accentGreen}/>
         <div style={{marginTop:12}}>
           <div style={{fontSize:11,color:S.textDim,marginBottom:8,fontWeight:600}}>DETAIL TRANSAKSI</div>
-          {(() => {
-            const hutangData = tx.filter(t => 
-              (t.kategori && t.kategori.toLowerCase() === "hutang") || 
-              t.tipe === "Hutang Masuk" || 
-              t.tipe === "Hutang Catat" || 
-              t.tipe === "Bayar Hutang"
-            ).sort((a,b) => (b.date || "").localeCompare(a.date || ""));
-            console.log('Data Hutang Terfilter:', hutangData);
-            return hutangData.length > 0 ? hutangData.map((t,i) => {
-              const isPayment = t.tipe === "Bayar Hutang" || t.tipe === "Hutang Catat" || t.pengeluaran > 0;
-              const amount = isPayment ? t.pengeluaran : t.penghasilan;
-              return (
-                <div key={t.id || i} style={{display:"flex",justifyContent:"space-between",padding:"6px 0",borderBottom:`1px solid ${S.border}`,fontSize:12}}>
-                  <span style={{color:isPayment?S.accentGreen:S.text}}>{t.date} — {t.item} ({t.catatan || "-"})</span>
-                  <span style={{fontFamily:"'DM Mono', monospace",fontWeight:600,color:isPayment?S.accentGreen:S.accentRed}}>
-                    {isPayment ? `-${fmt(amount)}` : `+${fmt(amount)}`}
-                  </span>
+          {hutangDetail.map((t, i) => (
+            <div key={t.id || i} style={{marginBottom:12,padding:"8px 10px",background:"rgba(255,255,255,0.03)",borderRadius:8,border:`1px solid ${S.border}`}}>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6,gap:8}}>
+                <span style={{color:S.textDim,fontSize:11,fontFamily:"'DM Mono', monospace"}}>{t.date || "-"}</span>
+                <span style={{fontFamily:"'DM Mono', monospace",fontWeight:700,fontSize:14,color:S.accentRed}}>{fmt(t.penghasilan || 0)}</span>
+              </div>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:8,fontSize:12}}>
+                <div style={{display:"flex",flexDirection:"column",gap:4}}>
+                  <span style={{fontWeight:700}}>{t.item || "-"}</span>
+                  <span style={{color:S.textDim,fontSize:11}}>{t.catatan || "-"}</span>
                 </div>
-              );
-            }) : <div style={{color:S.textMuted,fontSize:12}}>Tidak ada hutang tercatat</div>;
-          })()}
+                <span style={{color:S.textDim,fontSize:10}}>({t.tipe || "Hutang"})</span>
+              </div>
+            </div>
+          ))}
+          {hutangDetail.length === 0 && <div style={{color:S.textMuted,fontSize:12}}>Tidak ada hutang tercatat</div>}
         </div>
       </div>
       <div style={cardStyle}>
