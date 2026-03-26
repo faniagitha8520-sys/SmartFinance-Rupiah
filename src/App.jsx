@@ -6,7 +6,8 @@ const MONTHS = ["Januari","Februari","Maret","April","Mei","Juni","Juli","Agustu
 // ====== DEFAULTS (used for initialization only — runtime uses settings) ======
 const DEFAULT_AKUN_LIST = ["Cash","Yucho Bank","ICOCA","Everica","Wise","PayPay","Self Reward","Dana Darurat","Kirim Indonesia"];
 const DEFAULT_AKUN_VIRTUAL = ["Dana Darurat","Kirim Indonesia"];
-const TIPE_LIST = ["Pemasukan","Pengeluaran","Transfer Masuk","Transfer Keluar","Hutang Masuk","Hutang Catat","Bayar Hutang","Piutang Keluar","Piutang Masuk","Alokasi Virtual"];
+const TIPE_LIST = ["Pemasukan","Pengeluaran","Transfer Masuk","Transfer Keluar","Hutang Masuk","Bayar Hutang","Piutang Keluar","Piutang Masuk","Alokasi Virtual"];
+const normalizeDebtType = (tipe) => tipe === "Hutang Catat" ? "Bayar Hutang" : tipe;
 const DEFAULT_KATEGORI_SPENDING = ["Rokok","Jajan","Logistik","Transport","Hobi","Komunikasi","Subscription","Admin/Tax","Gadget","Perabot","Pakaian","Kesehatan/Obat","Perawatan Diri","Olahraga/Gym","Makan di Luar","Kendaraan","Pendidikan/Kursus","Hadiah/Oleh-oleh","Ongkos Kirim","Biaya Visa/Dokumen","Wisata/Jalan-jalan","Donasi/Sedekah","Lain-lain"];
 const KATEGORI_SYSTEM = ["Gaji","Saldo Awal","Potongan","Transfer","Hutang","Piutang"];
 
@@ -552,10 +553,16 @@ function InputView({ S, tx, addTx, updateTx, deleteTx, settings, lists, cardStyl
     return [...(f ? tx.filter(t => t.item.toLowerCase().includes(f) || t.kategori.toLowerCase().includes(f) || t.catatan.toLowerCase().includes(f)) : tx)].reverse();
   }, [tx, filter]);
 
-  const handleSubmit = () => { if (!form.item || !form.kategori) return; if (editId) { updateTx(editId, form); setEditId(null); } else { addTx(form); } setForm(empty); setShowForm(false); };
-  const startEdit = (t) => { setForm({ date: t.date, kategori: t.kategori, item: t.item, penghasilan: t.penghasilan, pengeluaran: t.pengeluaran, akun: t.akun, catatan: t.catatan, bulan: t.bulan, tipe: t.tipe }); setEditId(t.id); setShowForm(true); setShowOCR(false); };
+  const handleSubmit = () => {
+    if (!form.item || !form.kategori) return;
+    const normalizedForm = { ...form, tipe: normalizeDebtType(form.tipe) };
+    if (editId) { updateTx(editId, normalizedForm); setEditId(null); } else { addTx(normalizedForm); }
+    setForm(empty);
+    setShowForm(false);
+  };
+  const startEdit = (t) => { setForm({ date: t.date, kategori: t.kategori, item: t.item, penghasilan: t.penghasilan, pengeluaran: t.pengeluaran, akun: t.akun, catatan: t.catatan, bulan: t.bulan, tipe: normalizeDebtType(t.tipe) }); setEditId(t.id); setShowForm(true); setShowOCR(false); };
   const cancelEdit = () => { setEditId(null); setForm(empty); setShowForm(false); };
-  const parseCSV = (text) => { const lines = text.trim().split("\n").filter(l => l.trim()); const parsed = []; for (const line of lines) { const cols = line.split(",").map(c => c.trim()); if (cols.length < 5 || cols[0].toLowerCase() === "tanggal") continue; parsed.push({ date: cols[0] || new Date().toISOString().slice(0, 10), kategori: cols[1] || "", item: cols[2] || "", penghasilan: Number(cols[3]) || 0, pengeluaran: Number(cols[4]) || 0, akun: cols[5] || "Cash", catatan: cols[6] || "", bulan: cols[7] || MONTHS[new Date().getMonth()], tipe: cols[8] || "Pengeluaran" }); } return parsed; };
+  const parseCSV = (text) => { const lines = text.trim().split("\n").filter(l => l.trim()); const parsed = []; for (const line of lines) { const cols = line.split(",").map(c => c.trim()); if (cols.length < 5 || cols[0].toLowerCase() === "tanggal") continue; parsed.push({ date: cols[0] || new Date().toISOString().slice(0, 10), kategori: cols[1] || "", item: cols[2] || "", penghasilan: Number(cols[3]) || 0, pengeluaran: Number(cols[4]) || 0, akun: cols[5] || "Cash", catatan: cols[6] || "", bulan: cols[7] || MONTHS[new Date().getMonth()], tipe: normalizeDebtType(cols[8] || "Pengeluaran") }); } return parsed; };
   const handleCSVImport = () => { const parsed = parseCSV(csvText); if (parsed.length === 0) return; setOcrPreview(parsed); };
   const handlePhotoUpload = async (e) => {
     const file = e.target.files?.[0]; if (!file) return;
@@ -620,6 +627,7 @@ function InputView({ S, tx, addTx, updateTx, deleteTx, settings, lists, cardStyl
             <div style={{ flex: "0 0 80px", fontWeight: 600, color: S.accent, fontSize: 11 }}>{t.kategori}</div>
             <div style={{ flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{t.item}</div>
             <div style={{ flex: "0 0 70px", textAlign: "right", fontFamily: "'DM Mono', monospace", color: t.penghasilan > 0 ? S.accentGreen : S.accentRed, fontWeight: 600 }}>{t.penghasilan > 0 ? `+${fmt(t.penghasilan)}` : t.pengeluaran > 0 ? `-${fmt(t.pengeluaran)}` : "—"}</div>
+            <div style={{ flex: "0 0 90px", fontSize: 10, color: S.textMuted, textAlign: "right" }}>{normalizeDebtType(t.tipe)}</div>
             <div style={{ flex: "0 0 60px", fontSize: 10, color: S.textMuted, textAlign: "right" }}>{t.akun}</div>
             <button onClick={(e) => { e.stopPropagation(); deleteTx(t.id); }} style={{ background: "rgba(239,68,68,0.1)", border: "none", borderRadius: 4, color: "#ef4444", cursor: "pointer", padding: "2px 6px", fontSize: 11 }}>✕</button>
           </div>
@@ -774,7 +782,7 @@ function HutangView({ S, c, tx, cardStyle, labelStyle }) {
                   const amount = isPayment ? getBayarHutangAmount(t) : getHutangMasukAmount(t);
                   return (
                     <div key={t.id || i} style={{display:"flex",justifyContent:"space-between",padding:"4px 0",borderBottom:`1px solid ${S.border}`,fontSize:11}}>
-                      <span style={{color:isPayment?S.accentGreen:S.text}}>{t.date} — {t.item} <span style={{color:S.textDim,fontSize:10}}>({t.tipe || (isPayment ? "Bayar Hutang" : "Hutang Masuk")})</span></span>
+                      <span style={{color:isPayment?S.accentGreen:S.text}}>{t.date} — {t.item} <span style={{color:S.textDim,fontSize:10}}>({normalizeDebtType(t.tipe || (isPayment ? "Bayar Hutang" : "Hutang Masuk"))})</span></span>
                       <span style={{fontFamily:"'DM Mono', monospace",fontWeight:600,color:isPayment?S.accentGreen:S.accentRed}}>
                         {isPayment ? `+${fmt(amount)}` : `-${fmt(amount)}`}
                       </span>
