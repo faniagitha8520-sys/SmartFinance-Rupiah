@@ -254,16 +254,18 @@ export default function App() {
       });
     });
 
-    const hutangMasuk = tx.filter(t => t.tipe === "Hutang Masuk");
-    const bayarHutang = tx.filter(t => t.tipe === "Bayar Hutang" || t.tipe === "Hutang Catat");
-    const totalHutang = hutangMasuk.reduce((s, t) => s + t.penghasilan, 0);
-    const totalBayar = bayarHutang.reduce((s, t) => s + t.pengeluaran, 0);
+    // Hutang: filter by tipe OR kategori (handles mismatched tipe input)
+    const hutangMasuk = tx.filter(t => t.tipe === "Hutang Masuk" || (t.kategori === "Hutang" && t.penghasilan > 0 && t.tipe !== "Bayar Hutang" && t.tipe !== "Hutang Catat"));
+    const bayarHutang = tx.filter(t => t.tipe === "Bayar Hutang" || t.tipe === "Hutang Catat" || (t.kategori === "Hutang" && t.pengeluaran > 0 && t.tipe !== "Hutang Masuk"));
+    const totalHutang = hutangMasuk.reduce((s, t) => s + (t.penghasilan || 0), 0);
+    const totalBayar = bayarHutang.reduce((s, t) => s + (t.pengeluaran || 0), 0);
     const sisaHutang = totalHutang - totalBayar;
 
-    const piutangKeluar = tx.filter(t => t.tipe === "Piutang Keluar");
-    const piutangMasuk = tx.filter(t => t.tipe === "Piutang Masuk");
-    const totalPiutangOut = piutangKeluar.reduce((s, t) => s + t.pengeluaran, 0);
-    const totalPiutangIn = piutangMasuk.reduce((s, t) => s + t.penghasilan, 0);
+    // Piutang: filter by tipe OR kategori (handles mismatched tipe input)
+    const piutangKeluar = tx.filter(t => t.tipe === "Piutang Keluar" || (t.kategori === "Piutang" && t.pengeluaran > 0 && t.tipe !== "Piutang Masuk"));
+    const piutangMasuk = tx.filter(t => t.tipe === "Piutang Masuk" || (t.kategori === "Piutang" && t.penghasilan > 0 && t.tipe !== "Piutang Keluar"));
+    const totalPiutangOut = piutangKeluar.reduce((s, t) => s + (t.pengeluaran || 0), 0);
+    const totalPiutangIn = piutangMasuk.reduce((s, t) => s + (t.penghasilan || 0), 0);
     const sisaPiutang = totalPiutangOut - totalPiutangIn;
 
     const savingRate = totalPemasukan > 0 ? (totalPemasukan - totalPotongan - totalPengeluaranReal) / totalPemasukan : 0;
@@ -746,20 +748,22 @@ function HutangView({ S, c, tx, cardStyle, labelStyle }) {
         <div style={{marginTop:12}}>
           <div style={{fontSize:11,color:S.textDim,marginBottom:8,fontWeight:600}}>DETAIL PER ORANG/ENTITY</div>
           {Object.entries(hutangByPerson).map(([person, txs]) => {
-            const masuk = txs.filter(t => t.tipe === "Hutang Masuk").reduce((s, t) => s + (t.penghasilan || 0), 0);
-            const bayar = txs.filter(t => t.tipe === "Bayar Hutang" || t.tipe === "Hutang Catat").reduce((s, t) => s + (t.pengeluaran || 0), 0);
+            const masuk = txs.filter(t => t.tipe === "Hutang Masuk" || (t.kategori === "Hutang" && t.penghasilan > 0 && t.tipe !== "Bayar Hutang" && t.tipe !== "Hutang Catat")).reduce((s, t) => s + (t.penghasilan || 0), 0);
+            const bayar = txs.filter(t => t.tipe === "Bayar Hutang" || t.tipe === "Hutang Catat" || (t.kategori === "Hutang" && t.pengeluaran > 0 && t.tipe !== "Hutang Masuk")).reduce((s, t) => s + (t.pengeluaran || 0), 0);
             const sisa = masuk - bayar;
+            const isBayar = (t) => t.tipe === "Bayar Hutang" || t.tipe === "Hutang Catat" || (t.kategori === "Hutang" && t.pengeluaran > 0 && t.tipe !== "Hutang Masuk");
+            const isMasuk = (t) => t.tipe === "Hutang Masuk" || (t.kategori === "Hutang" && t.penghasilan > 0 && !isBayar(t));
             return (
               <div key={person} style={{marginBottom:12,padding:"8px 10px",background:"rgba(255,255,255,0.03)",borderRadius:8,border:`1px solid ${S.border}`}}>
                 <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6}}>
                   <span style={{fontWeight:700,fontSize:13}}>{person}</span>
                   <span style={{fontFamily:"'DM Mono', monospace",fontWeight:700,fontSize:14,color:sisa>0?S.accentRed:S.accentGreen}}>{sisa>0?`Sisa: ${fmt(sisa)}`:"✅ Lunas"}</span>
                 </div>
-                {txs.sort((a,b) => (a.date||"").localeCompare(b.date||"")).map((t,i) => (
+                {txs.sort((a,b) => (b.date||"").localeCompare(a.date||"")).map((t,i) => (
                   <div key={i} style={{display:"flex",justifyContent:"space-between",padding:"4px 0",borderBottom:`1px solid ${S.border}`,fontSize:11}}>
-                    <span style={{color:t.tipe==="Bayar Hutang"||t.tipe==="Hutang Catat"?S.accentGreen:S.text}}>{t.date} — {t.item} <span style={{color:S.textDim,fontSize:10}}>({t.tipe})</span></span>
-                    <span style={{fontFamily:"'DM Mono', monospace",fontWeight:600,color:t.tipe==="Bayar Hutang"||t.tipe==="Hutang Catat"?S.accentGreen:S.accentRed}}>
-                      {t.tipe==="Hutang Masuk"?`+${fmt(t.penghasilan)}`:`-${fmt(t.pengeluaran)}`}
+                    <span style={{color:isBayar(t)?S.accentGreen:S.text}}>{t.date} — {t.item} <span style={{color:S.textDim,fontSize:10}}>({t.tipe})</span></span>
+                    <span style={{fontFamily:"'DM Mono', monospace",fontWeight:600,color:isBayar(t)?S.accentGreen:S.accentRed}}>
+                      {isMasuk(t)?`+${fmt(t.penghasilan)}`:`-${fmt(t.pengeluaran)}`}
                     </span>
                   </div>
                 ))}
@@ -779,8 +783,10 @@ function HutangView({ S, c, tx, cardStyle, labelStyle }) {
         <div style={{marginTop:4}}>
           <div style={{fontSize:11,color:S.textDim,marginBottom:8,fontWeight:600}}>DETAIL PER ORANG</div>
           {Object.entries(piutangByPerson).map(([person, txs]) => {
-            const keluar = txs.filter(t => t.tipe === "Piutang Keluar").reduce((s, t) => s + (t.pengeluaran || 0), 0);
-            const masuk = txs.filter(t => t.tipe === "Piutang Masuk").reduce((s, t) => s + (t.penghasilan || 0), 0);
+            const isKeluar = (t) => t.tipe === "Piutang Keluar" || (t.kategori === "Piutang" && t.pengeluaran > 0 && t.tipe !== "Piutang Masuk");
+            const isMasukP = (t) => t.tipe === "Piutang Masuk" || (t.kategori === "Piutang" && t.penghasilan > 0 && t.tipe !== "Piutang Keluar");
+            const keluar = txs.filter(isKeluar).reduce((s, t) => s + (t.pengeluaran || 0), 0);
+            const masuk = txs.filter(isMasukP).reduce((s, t) => s + (t.penghasilan || 0), 0);
             const sisa = keluar - masuk;
             return (
               <div key={person} style={{marginBottom:12,padding:"8px 10px",background:"rgba(255,255,255,0.03)",borderRadius:8,border:`1px solid ${S.border}`}}>
@@ -788,11 +794,11 @@ function HutangView({ S, c, tx, cardStyle, labelStyle }) {
                   <span style={{fontWeight:700,fontSize:13}}>{person}</span>
                   <span style={{fontFamily:"'DM Mono', monospace",fontWeight:700,fontSize:14,color:sisa>0?S.accentYellow:S.accentGreen}}>{sisa>0?`Outstanding: ${fmt(sisa)}`:"✅ Lunas"}</span>
                 </div>
-                {txs.sort((a,b) => (a.date||"").localeCompare(b.date||"")).map((t,i) => (
+                {txs.sort((a,b) => (b.date||"").localeCompare(a.date||"")).map((t,i) => (
                   <div key={i} style={{display:"flex",justifyContent:"space-between",padding:"4px 0",borderBottom:`1px solid ${S.border}`,fontSize:11}}>
-                    <span style={{color:t.tipe==="Piutang Masuk"?S.accentGreen:S.text}}>{t.date} — {t.item} <span style={{color:S.textDim,fontSize:10}}>({t.tipe})</span></span>
-                    <span style={{fontFamily:"'DM Mono', monospace",fontWeight:600,color:t.tipe==="Piutang Masuk"?S.accentGreen:S.accentRed}}>
-                      {t.tipe==="Piutang Masuk"?`+${fmt(t.penghasilan)}`:`-${fmt(t.pengeluaran)}`}
+                    <span style={{color:isMasukP(t)?S.accentGreen:S.text}}>{t.date} — {t.item} <span style={{color:S.textDim,fontSize:10}}>({t.tipe})</span></span>
+                    <span style={{fontFamily:"'DM Mono', monospace",fontWeight:600,color:isMasukP(t)?S.accentGreen:S.accentRed}}>
+                      {isMasukP(t)?`+${fmt(t.penghasilan)}`:`-${fmt(t.pengeluaran)}`}
                     </span>
                   </div>
                 ))}
