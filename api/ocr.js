@@ -1,84 +1,65 @@
+import { createWorker } from 'tesseract.js';
+
 export default async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
   }
 
-  const { image, mediaType, apiKey } = req.body;
+  const { image, apiKey } = req.body;
 
-  if (!image || !apiKey) {
-    return res.status(400).json({ error: "Missing image or apiKey" });
+  if (!image) {
+    return res.status(400).json({ error: "Missing image" });
   }
 
   try {
-    const response = await fetch("https://api.anthropic.com/v1/messages", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-api-key": apiKey,
-        "anthropic-version": "2023-06-01",
-      },
-      body: JSON.stringify({
-        model: "claude-sonnet-4-20250514",
-        max_tokens: 2000,
-        messages: [
-          {
-            role: "user",
-            content: [
-              {
-                type: "image",
-                source: {
-                  type: "base64",
-                  media_type: mediaType || "image/jpeg",
-                  data: image,
-                },
-              },
-              {
-                type: "text",
-                text: `Kamu adalah OCR parser untuk struk belanja di Jepang. Extract SEMUA item dari struk ini.
-
-RESPOND ONLY dengan JSON array, tanpa markdown, tanpa backtick, tanpa penjelasan. Format:
-
-[{"date":"2026-03-20","kategori":"Jajan","item":"nama item dari struk","penghasilan":0,"pengeluaran":198,"akun":"Cash","catatan":"","bulan":"Maret","tipe":"Pengeluaran"}]
-
-RULES:
-- date: tanggal dari struk (format YYYY-MM-DD). Kalau gak ada, pakai hari ini.
-- kategori: pilih dari list ini SAJA: Rokok, Jajan, Logistik, Transport, Hobi, Komunikasi, Subscription, Admin/Tax, Gadget, Perabot, Pakaian, Kesehatan/Obat, Perawatan Diri, Olahraga/Gym, Makan di Luar, Kendaraan, Pendidikan/Kursus, Hadiah/Oleh-oleh, Ongkos Kirim, Biaya Visa/Dokumen, Wisata/Jalan-jalan, Donasi/Sedekah, Lain-lain
-  - Makanan/minuman dari supermarket/konbini = "Logistik"
-  - Snack/jajanan = "Jajan" 
-  - Restaurant/udon/ramen = "Makan di Luar"
-- item: nama item persis dari struk (dalam bahasa Jepang kalau ada)
-- pengeluaran: harga dalam YEN (angka saja, tanpa ¥)
-- akun: default "Cash"
-- bulan: bulan transaksi (Januari/Februari/Maret/etc)
-- tipe: selalu "Pengeluaran"
-- Abaikan subtotal/total/tax line — hanya item individual
-
-JSON ONLY. NO MARKDOWN.`,
-              },
-            ],
-          },
-        ],
-      }),
-    });
-
-    const data = await response.json();
-
-    if (data.error) {
-      return res.status(400).json({ error: data.error.message || "API error" });
-    }
-
-    const text = data.content?.[0]?.text || "";
+    // Decode base64 image
+    const buffer = Buffer.from(image, 'base64');
     
-    // Parse JSON from response - strip any accidental markdown
-    const cleaned = text.replace(/```json\s*/g, "").replace(/```\s*/g, "").trim();
+    // Create Tesseract worker
+    const worker = await createWorker('jpn+eng'); // Japanese + English
+    const { data: { text } } = await worker.recognize(buffer);
+    await worker.terminate();
 
-    try {
-      const transactions = JSON.parse(cleaned);
-      return res.status(200).json({ transactions });
-    } catch {
-      return res.status(200).json({ error: "Failed to parse OCR result", raw: text });
+    // Parse the OCR text to extract transactions
+    // This is a simple parser - you might need to adjust based on receipt format
+    const lines = text.split('\n').filter(line => line.trim());
+    
+    // Simple heuristic: lines that contain numbers likely are items
+    const transactions = lines.map(line => {
+      // Extract price (numbers with commas or dots)
+      const priceMatch = line.match(/(\d[\d,]*)\s*円?/);
+      const price = priceMatch ? parseInt(priceMatch[1].replace(/,/g, '')) : 0;
+      
+      // Extract item name (remove price part)
+      const item = line.replace(/(\d[\d,]*)\s*円?/, '').trim();
+      
+      if (!item || price === 0) return null;
+      
+      return {
+        date: new Date().toISOString().slice(0, 10),
+        kategori: "Logistik", // default category
+        item: item,
+        penghasilan: 0,
+        pengeluaran: price,
+        akun: "Cash",
+        catatan: "",
+        bulan: ["Januari","Februari","Maret","April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"][new Date().getMonth()],
+        tipe: "Pengeluaran"
+      };
+    }).filter(tx => tx !== null);
+
+    // If no transactions parsed, return raw text for debugging
+    if (transactions.length === 0) {
+      return res.status(200).json({ 
+        error: "No transactions parsed from OCR",
+        rawText: text,
+        lines: lines 
+      });
     }
+
+    return res.status(200).json({ transactions });
   } catch (err) {
+    console.error('OCR error:', err);
     return res.status(500).json({ error: err.message });
   }
 }

@@ -714,93 +714,31 @@ function KirimView({ S, c, settings, setSettings, cardStyle, labelStyle, bigNum 
 
 // ==================== HUTANG/PIUTANG ====================
 function HutangView({ S, c, tx, cardStyle, labelStyle }) {
-  // Group hutang by catatan (nama orang/entity)
-  const hutangAll = tx.filter(t => t.kategori === "Hutang" || t.tipe === "Hutang Masuk" || t.tipe === "Hutang Catat" || t.tipe === "Bayar Hutang");
-  const hutangByPerson = {};
-  hutangAll.forEach(t => {
-    const key = t.catatan || t.item || "Lainnya";
-    if (!hutangByPerson[key]) hutangByPerson[key] = [];
-    hutangByPerson[key].push(t);
-  });
-
-  // Group piutang by catatan (nama orang)
-  const piutangAll = tx.filter(t => t.kategori === "Piutang" || t.tipe === "Piutang Keluar" || t.tipe === "Piutang Masuk");
-  const piutangByPerson = {};
-  piutangAll.forEach(t => {
-    const key = t.catatan || t.item || "Lainnya";
-    if (!piutangByPerson[key]) piutangByPerson[key] = [];
-    piutangByPerson[key].push(t);
-  });
-
   return (
     <div style={{display:"flex",flexDirection:"column",gap:16}}>
       <div style={{fontSize:20,fontWeight:700}}>💳 Hutang & Piutang</div>
       <div style={cardStyle}>
-        <div style={{...labelStyle,marginBottom:12}}>📉 HUTANG (Saya berhutang ke orang lain)</div>
+        <div style={{...labelStyle,marginBottom:12}}>📉 HUTANG</div>
         <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:12,marginBottom:16}}>
           <div><div style={{fontSize:11,color:S.textDim}}>Total Hutang</div><div style={{fontSize:18,fontWeight:700,fontFamily:"'DM Mono', monospace"}}>{fmt(c.totalHutang)}</div></div>
           <div><div style={{fontSize:11,color:S.textDim}}>Dibayar</div><div style={{fontSize:18,fontWeight:700,fontFamily:"'DM Mono', monospace",color:S.accentGreen}}>{fmt(c.totalBayar)}</div></div>
           <div><div style={{fontSize:11,color:S.textDim}}>Sisa</div><div style={{fontSize:18,fontWeight:700,fontFamily:"'DM Mono', monospace",color:S.accentRed}}>{fmt(c.sisaHutang)}</div></div>
         </div>
         <Bar value={c.totalBayar} max={c.totalHutang} color={S.accentGreen}/>
-        <div style={{marginTop:12}}>
-          <div style={{fontSize:11,color:S.textDim,marginBottom:8,fontWeight:600}}>DETAIL PER ORANG/ENTITY</div>
-          {Object.entries(hutangByPerson).map(([person, txs]) => {
-            const masuk = txs.filter(t => t.tipe === "Hutang Masuk").reduce((s, t) => s + (t.penghasilan || 0), 0);
-            const bayar = txs.filter(t => t.tipe === "Bayar Hutang" || t.tipe === "Hutang Catat").reduce((s, t) => s + (t.pengeluaran || 0), 0);
-            const sisa = masuk - bayar;
-            return (
-              <div key={person} style={{marginBottom:12,padding:"8px 10px",background:"rgba(255,255,255,0.03)",borderRadius:8,border:`1px solid ${S.border}`}}>
-                <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6}}>
-                  <span style={{fontWeight:700,fontSize:13}}>{person}</span>
-                  <span style={{fontFamily:"'DM Mono', monospace",fontWeight:700,fontSize:14,color:sisa>0?S.accentRed:S.accentGreen}}>{sisa>0?`Sisa: ${fmt(sisa)}`:"✅ Lunas"}</span>
-                </div>
-                {txs.sort((a,b) => (a.date||"").localeCompare(b.date||"")).map((t,i) => (
-                  <div key={i} style={{display:"flex",justifyContent:"space-between",padding:"4px 0",borderBottom:`1px solid ${S.border}`,fontSize:11}}>
-                    <span style={{color:t.tipe==="Bayar Hutang"||t.tipe==="Hutang Catat"?S.accentGreen:S.text}}>{t.date} — {t.item} <span style={{color:S.textDim,fontSize:10}}>({t.tipe})</span></span>
-                    <span style={{fontFamily:"'DM Mono', monospace",fontWeight:600,color:t.tipe==="Bayar Hutang"||t.tipe==="Hutang Catat"?S.accentGreen:S.accentRed}}>
-                      {t.tipe==="Hutang Masuk"?`+${fmt(t.penghasilan)}`:`-${fmt(t.pengeluaran)}`}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            );
-          })}
-          {Object.keys(hutangByPerson).length === 0 && <div style={{color:S.textMuted,fontSize:12}}>Tidak ada hutang tercatat</div>}
-        </div>
       </div>
       <div style={cardStyle}>
-        <div style={{...labelStyle,marginBottom:12}}>💳 PIUTANG (Orang lain berhutang ke saya)</div>
+        <div style={{...labelStyle,marginBottom:12}}>💳 PIUTANG</div>
         <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:12,marginBottom:16}}>
           <div><div style={{fontSize:11,color:S.textDim}}>Keluar</div><div style={{fontSize:18,fontWeight:700,fontFamily:"'DM Mono', monospace"}}>{fmt(c.totalPiutangOut)}</div></div>
           <div><div style={{fontSize:11,color:S.textDim}}>Balik</div><div style={{fontSize:18,fontWeight:700,fontFamily:"'DM Mono', monospace",color:S.accentGreen}}>{fmt(c.totalPiutangIn)}</div></div>
           <div><div style={{fontSize:11,color:S.textDim}}>Outstanding</div><div style={{fontSize:18,fontWeight:700,fontFamily:"'DM Mono', monospace",color:S.accentYellow}}>{fmt(c.sisaPiutang)}</div></div>
         </div>
-        <div style={{marginTop:4}}>
-          <div style={{fontSize:11,color:S.textDim,marginBottom:8,fontWeight:600}}>DETAIL PER ORANG</div>
-          {Object.entries(piutangByPerson).map(([person, txs]) => {
-            const keluar = txs.filter(t => t.tipe === "Piutang Keluar").reduce((s, t) => s + (t.pengeluaran || 0), 0);
-            const masuk = txs.filter(t => t.tipe === "Piutang Masuk").reduce((s, t) => s + (t.penghasilan || 0), 0);
-            const sisa = keluar - masuk;
-            return (
-              <div key={person} style={{marginBottom:12,padding:"8px 10px",background:"rgba(255,255,255,0.03)",borderRadius:8,border:`1px solid ${S.border}`}}>
-                <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6}}>
-                  <span style={{fontWeight:700,fontSize:13}}>{person}</span>
-                  <span style={{fontFamily:"'DM Mono', monospace",fontWeight:700,fontSize:14,color:sisa>0?S.accentYellow:S.accentGreen}}>{sisa>0?`Outstanding: ${fmt(sisa)}`:"✅ Lunas"}</span>
-                </div>
-                {txs.sort((a,b) => (a.date||"").localeCompare(b.date||"")).map((t,i) => (
-                  <div key={i} style={{display:"flex",justifyContent:"space-between",padding:"4px 0",borderBottom:`1px solid ${S.border}`,fontSize:11}}>
-                    <span style={{color:t.tipe==="Piutang Masuk"?S.accentGreen:S.text}}>{t.date} — {t.item} <span style={{color:S.textDim,fontSize:10}}>({t.tipe})</span></span>
-                    <span style={{fontFamily:"'DM Mono', monospace",fontWeight:600,color:t.tipe==="Piutang Masuk"?S.accentGreen:S.accentRed}}>
-                      {t.tipe==="Piutang Masuk"?`+${fmt(t.penghasilan)}`:`-${fmt(t.pengeluaran)}`}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            );
-          })}
-          {Object.keys(piutangByPerson).length === 0 && <div style={{color:S.textMuted,fontSize:12}}>Tidak ada piutang tercatat</div>}
-        </div>
+        {tx.filter(t=>t.tipe==="Piutang Keluar"||t.tipe==="Piutang Masuk").reverse().map((t,i)=>(
+          <div key={i} style={{display:"flex",justifyContent:"space-between",padding:"6px 0",borderBottom:`1px solid ${S.border}`,fontSize:12}}>
+            <span style={{color:t.tipe==="Piutang Masuk"?S.accentGreen:S.text}}>{t.date} — {t.item} ({t.catatan})</span>
+            <span style={{fontFamily:"'DM Mono', monospace",fontWeight:600,color:t.tipe==="Piutang Masuk"?S.accentGreen:S.accentRed}}>{t.tipe==="Piutang Masuk"?`+${fmt(t.penghasilan)}`:`-${fmt(t.pengeluaran)}`}</span>
+          </div>
+        ))}
       </div>
     </div>
   );
