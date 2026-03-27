@@ -104,8 +104,8 @@ export function hashPin(pin) {
 
 // ====== CSV EXPORT ======
 export function generateCSV(tx) {
-  const headers = ["Tanggal","Kategori","Item","Penghasilan","Pengeluaran","Akun","Catatan","Bulan","Tipe"];
-  const rows = tx.map(t => [t.date, t.kategori, `"${t.item}"`, t.penghasilan, t.pengeluaran, t.akun, `"${t.catatan||""}"`, t.bulan, t.tipe].join(","));
+  const headers = ["Tanggal","Kategori","Item","Penghasilan","Pengeluaran","Gram","Akun","Catatan","Bulan","Tipe"];
+  const rows = tx.map(t => [t.date, t.kategori, `"${(t.item||"").replace(/"/g,'""')}"`, t.penghasilan||0, t.pengeluaran||0, t.gram||"", t.akun, `"${(t.catatan||"").replace(/"/g,'""')}"`, t.bulan, t.tipe].join(","));
   return [headers.join(","), ...rows].join("\n");
 }
 

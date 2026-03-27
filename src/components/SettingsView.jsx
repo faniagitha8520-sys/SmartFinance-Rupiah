@@ -1,27 +1,22 @@
 import { useState } from "react";
-import { DEFAULT_AKUN_LIST, DEFAULT_AKUN_VIRTUAL, DEFAULT_KATEGORI_SPENDING, hashPin, migrateSettings } from "../utils";
+import { DEFAULT_AKUN_LIST, DEFAULT_AKUN_VIRTUAL, DEFAULT_KATEGORI_SPENDING, hashPin, generateCSV } from "../utils";
 import { Card, Label } from "./UI";
-import { BACKUP_TX, BACKUP_SETTINGS } from "../backupData";
+import { Download } from "lucide-react";
 
 const inp = "bg-white shadow-sm border border-pink-100 rounded-lg px-2 py-1.5 text-sm text-slate-800 outline-none focus:border-pink-500/40 transition-all font-mono";
 
-export default function SettingsView({ settings, setSettings, tx, setTx, renameKategori, renameAkun, resetData, lists }) {
+export default function SettingsView({ settings, setSettings, tx, renameKategori, renameAkun, resetData, lists }) {
   const [modal, setModal] = useState(null);
 
   const closeModal = () => setModal(null);
 
-  const handleRestore = () => {
-    setModal({
-      title: "📦 Restore Backup Data",
-      placeholder: `Restore ${BACKUP_TX.length} transaksi dari backup? Data saat ini (${tx.length} transaksi) akan ditimpa.`,
-      isConfirmOnly: true,
-      confirmText: "Ya, Restore!",
-      onConfirm: () => {
-        setTx(BACKUP_TX);
-        setSettings(migrateSettings(BACKUP_SETTINGS));
-        closeModal();
-      }
-    });
+  const handleExportCSV = () => {
+    const csv = generateCSV(tx);
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url; a.download = `smart-finance-${new Date().toISOString().split("T")[0]}.csv`;
+    a.click(); URL.revokeObjectURL(url);
   };
 
   const handleRenameKat = (oldName) => {
@@ -224,11 +219,14 @@ export default function SettingsView({ settings, setSettings, tx, setTx, renameK
         </div>
       </Card>
 
-      {/* Restore & Reset */}
+      {/* Export Data */}
       <Card>
-        <Label className="mb-3">📦 Backup & Restore</Label>
-        <button onClick={handleRestore}
-          className="px-4 py-2.5 bg-emerald-50 border border-emerald-200 text-emerald-600 rounded-xl text-sm font-bold hover:bg-emerald-100 transition-all shadow-sm flex items-center gap-2">📦 Restore Backup ({BACKUP_TX.length} transaksi)</button>
+        <Label className="mb-3">💾 Export Data</Label>
+        <p className="text-[11px] text-slate-600 mb-3">Download seluruh data transaksi ({tx.length} transaksi) dalam format CSV.</p>
+        <button onClick={handleExportCSV}
+          className="px-5 py-3 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white rounded-xl text-sm font-bold hover:opacity-90 transition-all shadow-lg shadow-emerald-900/20 flex items-center gap-2">
+          <Download className="w-4 h-4" /> Export Data (CSV)
+        </button>
       </Card>
       <Card>
         <Label className="mb-3 text-red-500">⚠️ Danger Zone</Label>
