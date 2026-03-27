@@ -5,7 +5,7 @@ import { supabase } from "./supabase";
 export const MONTHS = ["Januari","Februari","Maret","April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"];
 
 // ====== DEFAULTS ======
-export const DEFAULT_AKUN_LIST = ["Cash","BCA","BRI","Mandiri","GoPay","OVO","Dana","ShopeePay","Dana Darurat"];
+export const DEFAULT_AKUN_LIST = ["Cash","BCA","BRI","Mandiri","GoPay","OVO","Dana","ShopeePay","Dana Darurat","Treasury (Emas)"];
 export const DEFAULT_AKUN_VIRTUAL = ["Dana Darurat"];
 export const TIPE_LIST = ["Pemasukan","Pengeluaran","Investasi","Tabungan","Zakat/Donasi","Pajak","Transfer Masuk","Transfer Keluar","Hutang Masuk","Bayar Hutang","Piutang Keluar","Piutang Masuk","Alokasi Virtual"];
 export const normalizeDebtType = (tipe) => tipe === "Hutang Catat" ? "Bayar Hutang" : tipe;

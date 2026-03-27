@@ -60,9 +60,10 @@ export default function App() {
       const allKeluar = akunTx.filter(t => !EXCLUDED.includes(t.tipe)).reduce((s, t) => s + (t.pengeluaran || 0), 0);
       const masukDisplay = akunTx.filter(t => t.tipe === "Pemasukan").reduce((s, t) => s + (t.penghasilan || 0), 0);
       const keluarDisplay = akunTx.filter(t => (t.tipe === "Pengeluaran" || t.tipe === "Bayar Hutang" || t.tipe === "Investasi" || t.tipe === "Tabungan" || t.tipe === "Zakat/Donasi" || t.tipe === "Pajak")).reduce((s, t) => s + (t.pengeluaran || 0), 0);
-      const gramMasuk = akunTx.filter(t => ["Pemasukan","Transfer Masuk","Hutang Masuk","Saldo Awal"].includes(t.tipe)).reduce((s, t) => s + (Number(t.gram) || 0), 0);
+      const gramSaldoAwal = akunTx.filter(t => t.tipe === "Saldo Awal").reduce((s, t) => s + (Number(t.gram) || 0), 0);
+      const gramMasuk = akunTx.filter(t => ["Pemasukan","Transfer Masuk","Hutang Masuk"].includes(t.tipe)).reduce((s, t) => s + (Number(t.gram) || 0), 0);
       const gramKeluar = akunTx.filter(t => ["Pengeluaran","Transfer Keluar","Bayar Hutang"].includes(t.tipe)).reduce((s, t) => s + (Number(t.gram) || 0), 0);
-      saldo[a] = { masuk: masukDisplay, keluar: keluarDisplay, saldoAkhir: allMasuk - allKeluar, gramTotal: gramMasuk - gramKeluar };
+      saldo[a] = { masuk: masukDisplay, keluar: keluarDisplay, saldoAkhir: allMasuk - allKeluar, gramSaldoAwal, gramMasuk, gramKeluar, gramTotal: gramSaldoAwal + gramMasuk - gramKeluar };
     });
     const goldAkun = akunList.filter(a => a.includes("(Emas)"));
     const totalGram = goldAkun.reduce((s, a) => s + (saldo[a]?.gramTotal || 0), 0);
@@ -179,7 +180,7 @@ export default function App() {
       case "dashboard": return <><DashboardView c={computed} lists={lists} settings={settings} /><div className="mt-6"><MonthlyChart monthStats={computed.monthStats} /></div></>;
       case "analisis": return <AnalisisView c={computed} lists={lists} />;
       case "input": return <InputView tx={tx} addTx={addTx} updateTx={updateTx} deleteTx={deleteTx} settings={settings} lists={lists} />;
-      case "saldo": return <SaldoView c={computed} lists={lists} />;
+      case "saldo": return <SaldoView c={computed} lists={lists} settings={settings} />;
       case "darurat": return <DanaView c={computed} settings={settings} setSettings={setSettings} />;
       case "hutang": return <HutangView c={computed} tx={tx} />;
       case "rekap": return <RekapView c={computed} />;
