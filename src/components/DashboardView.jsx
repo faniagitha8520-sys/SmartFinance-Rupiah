@@ -1,5 +1,5 @@
 import { fmt, pct } from "../utils";
-import { Card, Label, BigNum } from "./UI";
+import { Card, Label, BigNum, Bar } from "./UI";
 
 export default function DashboardView({ c, lists, settings }) {
   return (
