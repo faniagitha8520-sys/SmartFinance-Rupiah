@@ -35,6 +35,9 @@ export const uid = () => Date.now().toString(36) + Math.random().toString(36).sl
 
 // ====== SUPABASE STORAGE ======
 export async function loadData(key, fallback) {
+  if (!supabase) {
+    try { const v = localStorage.getItem("lz_" + key); return v ? JSON.parse(v) : fallback; } catch(e) { return fallback; }
+  }
   try {
     const { data, error } = await supabase.from("laporan").select("value").eq("key", key).single();
     if (error || !data) return fallback;
@@ -42,6 +45,10 @@ export async function loadData(key, fallback) {
   } catch (e) { console.error("Supabase load error:", e); return fallback; }
 }
 export async function saveData(key, val) {
+  if (!supabase) {
+    try { localStorage.setItem("lz_" + key, JSON.stringify(val)); } catch(e) {}
+    return;
+  }
   try { await supabase.from("laporan").upsert({ key, value: val, updated_at: new Date().toISOString() }); }
   catch (e) { console.error("Supabase save error:", e); }
 }
