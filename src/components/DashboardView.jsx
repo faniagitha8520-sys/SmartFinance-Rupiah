@@ -28,6 +28,27 @@ export default function DashboardView({ c, lists }) {
           </div>
         ))}
       </div>
+      
+      {/* Aset Emas */}
+      {c.totalGram > 0 && (
+        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-amber-400 via-yellow-500 to-amber-600 p-6 shadow-xl shadow-amber-900/20 animate-fade-in">
+          <div className="absolute top-0 right-0 p-8 opacity-10 rotate-12 scale-150">
+            <span className="text-9xl">🏆</span>
+          </div>
+          <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+            <div>
+              <p className="text-[11px] font-bold text-amber-900/60 uppercase tracking-[0.2em] mb-1">Aset Emas — Terpisah dari Rupiah</p>
+              <h3 className="text-3xl lg:text-4xl font-black text-amber-900 font-mono tracking-tight flex items-baseline gap-2">
+                {c.totalGram.toLocaleString("id-ID", { minimumFractionDigits: 4 })} <span className="text-xl font-bold opacity-70">gram</span>
+              </h3>
+            </div>
+            <div className="bg-white/20 backdrop-blur-md rounded-2xl p-4 border border-white/30">
+              <p className="text-[10px] font-bold text-amber-900/60 uppercase mb-1">Estimasi Nilai Saat Ini</p>
+              <p className="text-2xl font-black text-amber-900 font-mono">{fmt(c.totalGoldValue)}</p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Saldo Per Akun */}
       <Card>

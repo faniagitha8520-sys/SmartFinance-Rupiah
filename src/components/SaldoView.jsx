@@ -13,7 +13,7 @@ export default function SaldoView({ c, lists }) {
         <Label className="mb-3">🏦 Akun Bank</Label>
         <div className="overflow-x-auto">
           <table className="w-full border-collapse text-sm">
-            <thead><tr>{["Akun","Pemasukan","Pengeluaran","Saldo Akhir","% Total","Status"].map((h,i) =>
+            <thead><tr>{["Akun","Pemasukan","Pengeluaran","Gram","Saldo Akhir","% Total","Status"].map((h,i) =>
               <th key={i} className="text-left text-[11px] text-slate-500 pb-2 font-semibold pr-3 whitespace-nowrap">{h}</th>
             )}</tr></thead>
             <tbody>
@@ -25,6 +25,7 @@ export default function SaldoView({ c, lists }) {
                     <td className="py-2 pr-3 font-semibold text-slate-800"><span className="text-pink-600">🏦</span> {a}</td>
                     <td className="py-2 pr-3 font-mono text-emerald-600">{fmt(s.masuk)}</td>
                     <td className="py-2 pr-3 font-mono text-pink-600">{fmt(s.keluar)}</td>
+                    <td className="py-2 pr-3 font-mono text-amber-600 font-bold">{a.includes("(Emas)") ? s.gramTotal.toLocaleString("id-ID", { minimumFractionDigits: 4 }) + " g" : "—"}</td>
                     <td className="py-2 pr-3 font-mono text-slate-800 font-bold">{fmt(s.saldoAkhir)}</td>
                     <td className="py-2 pr-3 text-slate-500">{pct(pctVal)}</td>
                     <td className="py-2"><StatusBadge status={status} /></td>

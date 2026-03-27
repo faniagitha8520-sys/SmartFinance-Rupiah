@@ -155,8 +155,18 @@ export default function SettingsView({ settings, setSettings, tx, renameKategori
       <Card>
         <Label className="mb-3">🔒 Potongan Rutin</Label>
         <div className="flex items-center gap-3">
-          <span className="text-sm">Total Potongan Rutin (Rp/bulan)</span>
+          <span className="text-sm text-slate-700">Total Potongan Rutin (Rp/bulan)</span>
           <input type="number" value={settings.potonganRutin} onChange={e=>setSettings({...settings,potonganRutin:Number(e.target.value)||0})} className={`${inp} !w-32`} />
+        </div>
+      </Card>
+
+      {/* Konfigurasi Emas */}
+      <Card className="border-amber-100 bg-amber-50/50">
+        <Label className="mb-3 text-amber-700">🏆 Konfigurasi Aset Emas</Label>
+        <p className="text-[11px] text-amber-800/70 mb-3">Update harga jual emas terkini untuk menghitung estimasi nilai aset.</p>
+        <div className="flex items-center gap-3">
+          <span className="text-sm text-slate-700 font-medium">Harga Emas Jual (Rp/gram)</span>
+          <input type="number" value={settings.goldPrice || 1300000} onChange={e=>setSettings({...settings, goldPrice: Number(e.target.value)||0})} className={`${inp} !w-40 border-amber-200 text-amber-700 font-bold`} />
         </div>
       </Card>
 

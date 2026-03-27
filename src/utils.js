@@ -22,12 +22,14 @@ export const DEFAULT_SETTINGS = {
   akunList: DEFAULT_AKUN_LIST,
   akunVirtual: DEFAULT_AKUN_VIRTUAL,
   kategoriSpending: DEFAULT_KATEGORI_SPENDING,
+  goldPrice: 1300000,
 };
 
 export const INITIAL_TX = [{"date":"2026-03-05","kategori":"Saldo Awal","item":"Saldo Awal Cash","penghasilan":2000000,"pengeluaran":0,"akun":"Cash","catatan":"Opening balance","bulan":"Maret","tipe":"Pemasukan"},{"date":"2026-03-05","kategori":"Gaji","item":"Gaji Maret","penghasilan":8500000,"pengeluaran":0,"akun":"BCA","catatan":"Gaji Maret","bulan":"Maret","tipe":"Pemasukan"},{"date":"2026-03-05","kategori":"Potongan","item":"Kost/Kontrakan","penghasilan":0,"pengeluaran":1500000,"akun":"Cash","catatan":"","bulan":"Maret","tipe":"Pengeluaran"},{"date":"2026-03-05","kategori":"Jajan","item":"Kopi + Snack","penghasilan":0,"pengeluaran":35000,"akun":"Cash","catatan":"","bulan":"Maret","tipe":"Pengeluaran"}];
 
 // ====== FORMATTERS ======
 export const fmt = (n) => n != null ? "Rp " + Math.round(n).toLocaleString("id-ID") : "Rp 0";
+export const fmtG = (n) => n != null ? n.toLocaleString("id-ID", { minimumFractionDigits: 4 }) + " g" : "0.0000 g";
 export const pct = (n) => n != null ? (n * 100).toFixed(1) + "%" : "0%";
 export const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
 
@@ -82,6 +84,7 @@ export function migrateSettings(s) {
     delete m.customCategories;
   }
   if (!m.pin) m.pin = "";
+  if (m.goldPrice === undefined) m.goldPrice = 1300000;
   return m;
 }
 

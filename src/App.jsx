@@ -60,8 +60,13 @@ export default function App() {
       const allKeluar = akunTx.filter(t => !EXCLUDED.includes(t.tipe)).reduce((s, t) => s + (t.pengeluaran || 0), 0);
       const masukDisplay = akunTx.filter(t => t.tipe === "Pemasukan").reduce((s, t) => s + (t.penghasilan || 0), 0);
       const keluarDisplay = akunTx.filter(t => (t.tipe === "Pengeluaran" || t.tipe === "Bayar Hutang" || t.tipe === "Investasi" || t.tipe === "Tabungan" || t.tipe === "Zakat/Donasi" || t.tipe === "Pajak")).reduce((s, t) => s + (t.pengeluaran || 0), 0);
-      saldo[a] = { masuk: masukDisplay, keluar: keluarDisplay, saldoAkhir: allMasuk - allKeluar };
+      const gramMasuk = akunTx.filter(t => ["Pemasukan","Transfer Masuk","Hutang Masuk","Saldo Awal"].includes(t.tipe)).reduce((s, t) => s + (Number(t.gram) || 0), 0);
+      const gramKeluar = akunTx.filter(t => ["Pengeluaran","Transfer Keluar","Bayar Hutang"].includes(t.tipe)).reduce((s, t) => s + (Number(t.gram) || 0), 0);
+      saldo[a] = { masuk: masukDisplay, keluar: keluarDisplay, saldoAkhir: allMasuk - allKeluar, gramTotal: gramMasuk - gramKeluar };
     });
+    const goldAkun = akunList.filter(a => a.includes("(Emas)"));
+    const totalGram = goldAkun.reduce((s, a) => s + (saldo[a]?.gramTotal || 0), 0);
+    const totalGoldValue = totalGram * (settings.goldPrice || 1300000);
     const totalAsetReal = akunReal.reduce((s, a) => s + Math.max(saldo[a]?.saldoAkhir || 0, 0), 0);
     const totalAsetVirtual = akunVirtual.reduce((s, a) => s + Math.max(saldo[a]?.saldoAkhir || 0, 0), 0);
     const totalAset = totalAsetReal;
@@ -121,7 +126,7 @@ export default function App() {
     const avgMonthlySpend = totalPotongan + totalPengeluaranReal;
     const burnRate = avgMonthlySpend > 0 ? totalAset / avgMonthlySpend : 99;
     const mainBankFree = Math.max((saldo["BCA"]?.saldoAkhir || 0) - totalAsetVirtual, 0);
-    return { saldo, totalAset, totalAsetReal, totalAsetVirtual, mainBankFree, totalPemasukan, totalPotongan, totalPengeluaranReal, totalInvestasi, totalTabungan, netSaving, monthStats, budgetData, byMonth, totalHutang, totalBayar, sisaHutang, hutangMasuk, bayarHutang, totalPiutangOut, totalPiutangIn, sisaPiutang, piutangKeluar, piutangMasuk, healthScore, healthLabel, savingRate, savingScore, budgetScore, ddScore, hutangScore, diversScore, ddTarget, ddCurrent, ddProgress, topSpending, burnRate, spendingByKat, activeAkun };
+    return { saldo, totalAset, totalAsetReal, totalAsetVirtual, mainBankFree, totalPemasukan, totalPotongan, totalPengeluaranReal, totalInvestasi, totalTabungan, totalGram, totalGoldValue, netSaving, monthStats, budgetData, byMonth, totalHutang, totalBayar, sisaHutang, hutangMasuk, bayarHutang, totalPiutangOut, totalPiutangIn, sisaPiutang, piutangKeluar, piutangMasuk, healthScore, healthLabel, savingRate, savingScore, budgetScore, ddScore, hutangScore, diversScore, ddTarget, ddCurrent, ddProgress, topSpending, burnRate, spendingByKat, activeAkun };
   }, [tx, settings, akunList, akunVirtual, akunReal, kategoriSpending]);
 
   const addTx = useCallback((newTx) => { setTx(prev => [...prev, { ...newTx, id: uid() }]); }, []);
