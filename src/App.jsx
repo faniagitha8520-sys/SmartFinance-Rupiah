@@ -32,7 +32,7 @@ export default function App() {
     const migrateTx = (txList) => txList.map(t => ({ ...t, akun: AKUN_MIGRATE[t.akun] || t.akun, id: t.id || uid() }));
     (async () => {
       const [storedTx, storedSettings] = await Promise.all([loadData("transactions", null), loadData("settings", null)]);
-      setTx(migrateTx(storedTx || INITIAL_TX.map(t => ({ ...t, id: uid() }))));
+      setTx(migrateTx(storedTx?.length > 0 ? storedTx : INITIAL_TX.map(t => ({ ...t, id: uid() }))));
       const migrated = migrateSettings(storedSettings || DEFAULT_SETTINGS);
       setSettings(migrated);
       try { if (!migrated.pin || sessionStorage.getItem("lz_unlocked") === "1") setUnlocked(true); } catch(e) { if (!migrated.pin) setUnlocked(true); }
@@ -185,7 +185,7 @@ export default function App() {
       case "hutang": return <HutangView c={computed} tx={tx} />;
       case "rekap": return <RekapView c={computed} />;
       case "bulanan": return <BulananView c={computed} tx={tx} settings={settings} lists={lists} selMonth={selMonth} setSelMonth={setSelMonth} />;
-      case "settings": return <SettingsView settings={settings} setSettings={setSettings} tx={tx} renameKategori={renameKategori} renameAkun={renameAkun} resetData={resetData} lists={lists} />;
+      case "settings": return <SettingsView settings={settings} setSettings={setSettings} tx={tx} setTx={setTx} renameKategori={renameKategori} renameAkun={renameAkun} resetData={resetData} lists={lists} />;
       default: return null;
     }
   };
