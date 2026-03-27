@@ -1,7 +1,7 @@
 import { fmt, pct } from "../utils";
 import { Card, Bar, Label, BigNum } from "./UI";
 
-export default function DashboardView({ c, lists }) {
+export default function DashboardView({ c, lists, settings }) {
   return (
     <div className="space-y-6 animate-fade-in-up">
       <div>
@@ -42,9 +42,10 @@ export default function DashboardView({ c, lists }) {
                 {c.totalGram.toLocaleString("id-ID", { minimumFractionDigits: 4 })} <span className="text-xl font-bold opacity-70">gram</span>
               </h3>
             </div>
-            <div className="bg-white/20 backdrop-blur-md rounded-2xl p-4 border border-white/30">
+            <div className="bg-white/20 backdrop-blur-md rounded-2xl p-4 border border-white/30 text-right">
               <p className="text-[10px] font-bold text-amber-900/60 uppercase mb-1">Estimasi Nilai Saat Ini</p>
               <p className="text-2xl font-black text-amber-900 font-mono">{fmt(c.totalGoldValue)}</p>
+              <p className="text-[9px] font-bold text-amber-900/40 mt-1 uppercase">Harga: {fmt(settings.goldPrice)}/g</p>
             </div>
           </div>
         </div>

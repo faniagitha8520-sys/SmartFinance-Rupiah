@@ -176,7 +176,7 @@ export default function App() {
 
   const renderContent = () => {
     switch (tab) {
-      case "dashboard": return <><DashboardView c={computed} lists={lists} /><div className="mt-6"><MonthlyChart monthStats={computed.monthStats} /></div></>;
+      case "dashboard": return <><DashboardView c={computed} lists={lists} settings={settings} /><div className="mt-6"><MonthlyChart monthStats={computed.monthStats} /></div></>;
       case "analisis": return <AnalisisView c={computed} lists={lists} />;
       case "input": return <InputView tx={tx} addTx={addTx} updateTx={updateTx} deleteTx={deleteTx} settings={settings} lists={lists} />;
       case "saldo": return <SaldoView c={computed} lists={lists} />;
