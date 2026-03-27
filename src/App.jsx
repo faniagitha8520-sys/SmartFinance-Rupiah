@@ -42,8 +42,10 @@ export default function App() {
 
   const debouncedTx = useDebounce(tx);
   const debouncedSettings = useDebounce(settings);
-  useEffect(() => { if (!loading && debouncedTx) { setSaving(true); saveData("transactions", debouncedTx).then(() => setSaving(false)); } }, [debouncedTx, loading]);
-  useEffect(() => { if (!loading) { setSaving(true); saveData("settings", debouncedSettings).then(() => setSaving(false)); } }, [debouncedSettings, loading]);
+  const [dataLoaded, setDataLoaded] = useState(false); // prevent saving before first load completes
+  useEffect(() => { if (!loading) { const t = setTimeout(() => setDataLoaded(true), 1500); return () => clearTimeout(t); } }, [loading]);
+  useEffect(() => { if (dataLoaded && debouncedTx && debouncedTx.length > 0) { setSaving(true); saveData("transactions", debouncedTx).then(() => setSaving(false)); } }, [debouncedTx, dataLoaded]);
+  useEffect(() => { if (dataLoaded) { setSaving(true); saveData("settings", debouncedSettings).then(() => setSaving(false)); } }, [debouncedSettings, dataLoaded]);
 
   const akunList = settings.akunList || DEFAULT_AKUN_LIST;
   const akunVirtual = settings.akunVirtual || DEFAULT_AKUN_VIRTUAL;
@@ -61,14 +63,14 @@ export default function App() {
       const masukDisplay = akunTx.filter(t => t.tipe === "Pemasukan").reduce((s, t) => s + (t.penghasilan || 0), 0);
       const keluarDisplay = akunTx.filter(t => (t.tipe === "Pengeluaran" || t.tipe === "Bayar Hutang" || t.tipe === "Investasi" || t.tipe === "Tabungan" || t.tipe === "Zakat/Donasi" || t.tipe === "Pajak")).reduce((s, t) => s + (t.pengeluaran || 0), 0);
       const gramSaldoAwal = akunTx.filter(t => t.tipe === "Saldo Awal").reduce((s, t) => s + (Number(t.gram) || 0), 0);
-      const gramMasuk = akunTx.filter(t => ["Pemasukan","Transfer Masuk","Hutang Masuk"].includes(t.tipe)).reduce((s, t) => s + (Number(t.gram) || 0), 0);
-      const gramKeluar = akunTx.filter(t => ["Pengeluaran","Transfer Keluar","Bayar Hutang"].includes(t.tipe)).reduce((s, t) => s + (Number(t.gram) || 0), 0);
+      const gramMasuk = akunTx.filter(t => ["Pemasukan","Transfer Masuk","Hutang Masuk","Investasi"].includes(t.tipe)).reduce((s, t) => s + (Number(t.gram) || 0), 0);
+      const gramKeluar = akunTx.filter(t => ["Pengeluaran","Transfer Keluar","Bayar Hutang","Tabungan"].includes(t.tipe)).reduce((s, t) => s + (Number(t.gram) || 0), 0);
       saldo[a] = { masuk: masukDisplay, keluar: keluarDisplay, saldoAkhir: allMasuk - allKeluar, gramSaldoAwal, gramMasuk, gramKeluar, gramTotal: gramSaldoAwal + gramMasuk - gramKeluar };
     });
     const goldAkun = akunList.filter(a => a.includes("(Emas)"));
     const totalGram = goldAkun.reduce((s, a) => s + (saldo[a]?.gramTotal || 0), 0);
     const totalGoldValue = totalGram * (settings.goldPrice || 1300000);
-    const totalAsetReal = akunReal.reduce((s, a) => s + Math.max(saldo[a]?.saldoAkhir || 0, 0), 0);
+    const totalAsetReal = akunReal.filter(a => !a.includes("(Emas)")).reduce((s, a) => s + Math.max(saldo[a]?.saldoAkhir || 0, 0), 0);
     const totalAsetVirtual = akunVirtual.reduce((s, a) => s + Math.max(saldo[a]?.saldoAkhir || 0, 0), 0);
     const totalAset = totalAsetReal;
     const totalPemasukan = tx.filter(t => t.tipe === "Pemasukan").reduce((s, t) => s + t.penghasilan, 0);

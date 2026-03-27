@@ -29,8 +29,8 @@ export default function DashboardView({ c, lists, settings }) {
         ))}
       </div>
       
-      {/* Aset Emas */}
-      {c.totalGram > 0 && (
+      {/* Aset Emas — selalu tampil jika ada akun emas */}
+      {lists.akunList.some(a => a.includes("(Emas)")) && (
         <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-amber-400 via-yellow-500 to-amber-600 p-6 shadow-xl shadow-amber-900/20 animate-fade-in">
           <div className="absolute top-0 right-0 p-8 opacity-10 rotate-12 scale-150">
             <span className="text-9xl">🏆</span>
@@ -38,14 +38,18 @@ export default function DashboardView({ c, lists, settings }) {
           <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
             <div>
               <p className="text-[11px] font-bold text-amber-900/60 uppercase tracking-[0.2em] mb-1">Aset Emas — Terpisah dari Rupiah</p>
-              <h3 className="text-3xl lg:text-4xl font-black text-amber-900 font-mono tracking-tight flex items-baseline gap-2">
-                {c.totalGram.toLocaleString("id-ID", { minimumFractionDigits: 4 })} <span className="text-xl font-bold opacity-70">gram</span>
-              </h3>
+              {c.totalGram > 0 ? (
+                <h3 className="text-3xl lg:text-4xl font-black text-amber-900 font-mono tracking-tight flex items-baseline gap-2">
+                  {c.totalGram.toLocaleString("id-ID", { minimumFractionDigits: 4 })} <span className="text-xl font-bold opacity-70">gram</span>
+                </h3>
+              ) : (
+                <p className="text-lg font-semibold text-amber-900/70 mt-1">Belum ada transaksi emas. Input di tab Input → pilih akun Treasury (Emas).</p>
+              )}
             </div>
             <div className="bg-white/20 backdrop-blur-md rounded-2xl p-4 border border-white/30 text-right">
               <p className="text-[10px] font-bold text-amber-900/60 uppercase mb-1">Estimasi Nilai Saat Ini</p>
               <p className="text-2xl font-black text-amber-900 font-mono">{fmt(c.totalGoldValue)}</p>
-              <p className="text-[9px] font-bold text-amber-900/40 mt-1 uppercase">Harga: {fmt(settings.goldPrice)}/g</p>
+              <p className="text-[9px] font-bold text-amber-900/40 mt-1 uppercase">Harga: {fmt(settings.goldPrice || 0)}/g — Edit di Settings</p>
             </div>
           </div>
         </div>
@@ -55,7 +59,7 @@ export default function DashboardView({ c, lists, settings }) {
       <Card>
         <Label className="mb-3">🏦 Saldo Per Akun</Label>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-          {lists.akunReal.map(a => {
+          {lists.akunReal.filter(a => !a.includes("(Emas)")).map(a => {
             const s = c.saldo[a]; if (!s) return null;
             const pctTotal = c.totalAset > 0 ? s.saldoAkhir / c.totalAset : 0;
             return (

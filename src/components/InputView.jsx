@@ -6,7 +6,9 @@ const inp = "w-full bg-white shadow-sm border border-pink-100 rounded-xl px-3 py
 const inpMono = inp + " font-mono";
 
 export default function InputView({ tx, addTx, updateTx, deleteTx, settings, lists }) {
-  const empty = { date: new Date().toISOString().slice(0, 10), kategori: "", item: "", penghasilan: 0, pengeluaran: 0, gram: 0, akun: "Cash", catatan: "", bulan: MONTHS[new Date().getMonth()], tipe: "Pengeluaran" };
+  const empty = { date: new Date().toISOString().slice(0, 10), kategori: "", item: "", penghasilan: "", pengeluaran: "", gram: "", akun: "Cash", catatan: "", bulan: MONTHS[new Date().getMonth()], tipe: "Pengeluaran" };
+  // Number input handler: keeps raw string so user can type freely, no "01" or "0500" issue
+  const numChange = (field) => (e) => setForm({ ...form, [field]: e.target.value });
   const [form, setForm] = useState(empty);
   const [filter, setFilter] = useState("");
   const [filterMode, setFilterMode] = useState("all");
@@ -35,11 +37,17 @@ export default function InputView({ tx, addTx, updateTx, deleteTx, settings, lis
 
   const handleSubmit = () => {
     if (!form.item || !form.kategori) return;
-    const normalizedForm = { ...form, tipe: normalizeDebtType(form.tipe) };
+    // Convert string values to numbers on submit
+    const normalizedForm = { ...form, tipe: normalizeDebtType(form.tipe), penghasilan: Number(form.penghasilan) || 0, pengeluaran: Number(form.pengeluaran) || 0, gram: Number(form.gram) || 0 };
+    // Emas: hanya catat gram, Rp = 0
+    if (normalizedForm.akun.includes("(Emas)")) {
+      normalizedForm.penghasilan = 0;
+      normalizedForm.pengeluaran = 0;
+    }
     if (editId) { updateTx(editId, normalizedForm); setEditId(null); } else { addTx(normalizedForm); }
     setForm(empty); setShowForm(false);
   };
-  const startEdit = (t) => { setForm({ date: t.date, kategori: t.kategori, item: t.item, penghasilan: t.penghasilan, pengeluaran: t.pengeluaran, gram: t.gram || 0, akun: t.akun, catatan: t.catatan, bulan: t.bulan, tipe: normalizeDebtType(t.tipe) }); setEditId(t.id); setShowForm(true); setShowOCR(false); };
+  const startEdit = (t) => { setForm({ date: t.date, kategori: t.kategori, item: t.item, penghasilan: t.penghasilan || "", pengeluaran: t.pengeluaran || "", gram: t.gram || "", akun: t.akun, catatan: t.catatan, bulan: t.bulan, tipe: normalizeDebtType(t.tipe) }); setEditId(t.id); setShowForm(true); setShowOCR(false); };
   const cancelEdit = () => { setEditId(null); setForm(empty); setShowForm(false); };
   const parseCSV = (text) => { const lines = text.trim().split("\n").filter(l => l.trim()); const parsed = []; for (const line of lines) { const cols = line.split(",").map(c => c.trim()); if (cols.length < 5 || cols[0].toLowerCase() === "tanggal") continue; parsed.push({ date: cols[0] || new Date().toISOString().slice(0, 10), kategori: cols[1] || "", item: cols[2] || "", penghasilan: Number(cols[3]) || 0, pengeluaran: Number(cols[4]) || 0, akun: cols[5] || "Cash", catatan: cols[6] || "", bulan: cols[7] || MONTHS[new Date().getMonth()], tipe: normalizeDebtType(cols[8] || "Pengeluaran") }); } return parsed; };
   const handleCSVImport = () => { const parsed = parseCSV(csvText); if (parsed.length === 0) return; setOcrPreview(parsed); };
@@ -154,11 +162,16 @@ export default function InputView({ tx, addTx, updateTx, deleteTx, settings, lis
             <div><div className="text-[11px] text-slate-500 mb-1">Akun</div><select value={form.akun} onChange={e => setForm({...form, akun: e.target.value})} className={inp}>{lists.akunList.map(a => <option key={a} value={a}>{a}</option>)}</select></div>
             <div><div className="text-[11px] text-slate-500 mb-1">Item</div><input value={form.item} onChange={e => setForm({...form, item: e.target.value})} placeholder="Nama item..." className={inp} /></div>
             <div><div className="text-[11px] text-slate-500 mb-1">Bulan</div><select value={form.bulan} onChange={e => setForm({...form, bulan: e.target.value})} className={inp}>{MONTHS.map(m => <option key={m} value={m}>{m}</option>)}</select></div>
-            <div><div className="text-[11px] text-slate-500 mb-1">Penghasilan (Rp)</div><input type="number" value={form.penghasilan||""} onChange={e => setForm({...form, penghasilan: Number(e.target.value)||0})} className={inpMono} placeholder="0" /></div>
-            <div><div className="text-[11px] text-slate-500 mb-1">Pengeluaran (Rp)</div><input type="number" value={form.pengeluaran||""} onChange={e => setForm({...form, pengeluaran: Number(e.target.value)||0})} className={inpMono} placeholder="0" /></div>
-            {form.akun.includes("(Emas)") && (
-              <div><div className="text-[11px] text-pink-600 font-bold mb-1">Gram Emas (g)</div><input type="number" step="0.0001" value={form.gram||""} onChange={e => setForm({...form, gram: Number(e.target.value)||0})} className={inpMono + " border-pink-300 bg-pink-50/50"} placeholder="0.0000" /></div>
-            )}
+            {form.akun.includes("(Emas)") ? (
+              <div className="col-span-2 bg-amber-50 border border-amber-200 rounded-xl p-3">
+                <div className="text-[11px] text-amber-700 font-bold mb-2">🏆 Pencatatan Emas (gram)</div>
+                <input type="number" step="0.0001" value={form.gram} onChange={numChange("gram")} className={inpMono + " border-amber-300 bg-white"} placeholder="Contoh: 0.2" />
+                <p className="text-[10px] text-amber-600 mt-1">Tipe Pemasukan = beli emas, Pengeluaran = jual emas. Nilai Rp dihitung otomatis.</p>
+              </div>
+            ) : (<>
+              <div><div className="text-[11px] text-slate-500 mb-1">Penghasilan (Rp)</div><input type="number" value={form.penghasilan} onChange={numChange("penghasilan")} className={inpMono} placeholder="0" /></div>
+              <div><div className="text-[11px] text-slate-500 mb-1">Pengeluaran (Rp)</div><input type="number" value={form.pengeluaran} onChange={numChange("pengeluaran")} className={inpMono} placeholder="0" /></div>
+            </>)}
           </div>
           <div className="mt-3"><div className="text-[11px] text-slate-500 mb-1">Catatan</div><input value={form.catatan} onChange={e => setForm({...form, catatan: e.target.value})} placeholder="Optional..." className={inp} /></div>
           <div className="flex gap-2 mt-4">
@@ -197,8 +210,8 @@ export default function InputView({ tx, addTx, updateTx, deleteTx, settings, lis
               <span className="w-[70px] text-slate-500 font-mono shrink-0">{t.date?.slice(5)}</span>
               <span className="w-[70px] text-pink-600 font-semibold text-[11px] shrink-0">{t.kategori}</span>
               <span className="flex-1 truncate">{t.item}</span>
-              <span className={`w-[70px] text-right font-mono font-semibold shrink-0 ${t.penghasilan > 0 ? 'text-emerald-600' : t.pengeluaran > 0 ? 'text-pink-600' : 'text-slate-600'}`}>
-                {t.penghasilan > 0 ? `+${fmt(t.penghasilan)}` : t.pengeluaran > 0 ? `-${fmt(t.pengeluaran)}` : "—"}
+              <span className={`w-[70px] text-right font-mono font-semibold shrink-0 ${t.gram > 0 ? 'text-amber-600' : t.penghasilan > 0 ? 'text-emerald-600' : t.pengeluaran > 0 ? 'text-pink-600' : 'text-slate-600'}`}>
+                {t.gram > 0 ? `${Number(t.gram).toFixed(4)}g` : t.penghasilan > 0 ? `+${fmt(t.penghasilan)}` : t.pengeluaran > 0 ? `-${fmt(t.pengeluaran)}` : "—"}
               </span>
               <span className="w-[80px] text-right text-slate-600 text-[10px] shrink-0 hidden sm:block">{normalizeDebtType(t.tipe)}</span>
               <span className="w-[55px] text-right text-slate-600 text-[10px] shrink-0 hidden sm:block">{t.akun}</span>
