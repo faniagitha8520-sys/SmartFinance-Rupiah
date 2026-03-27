@@ -26,10 +26,13 @@ export default function PinScreen({ onUnlock, settings, setSettings }) {
       <div className="relative w-full max-w-xs">
         <div className="bg-white shadow-sm border border-pink-100 rounded-3xl p-8 backdrop-blur-xl text-center">
           <div className="w-16 h-16 mx-auto mb-5 rounded-2xl bg-gradient-to-br from-pink-500 to-pink-700 flex items-center justify-center shadow-xl shadow-pink-900/40 animate-float">
-            <span className="text-2xl">🔐</span>
+            <span className="text-2xl">🎀</span>
           </div>
-          <h1 className="text-lg font-bold gradient-text-pink mb-1">Smart Finance</h1>
-          <p className="text-xs text-slate-500 mb-6">Masukkan PIN untuk melanjutkan</p>
+          <div className="flex justify-center items-center gap-2 mb-1">
+            <h1 className="text-lg font-bold gradient-text-pink">Laporan Fani</h1>
+            <span className="text-sm">🔒</span>
+          </div>
+          <p className="text-xs text-slate-500 mb-6">Masukkan PIN keamanan</p>
           <form onSubmit={handleSubmit}>
             <input
               type="password"
