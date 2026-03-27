@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { DEFAULT_AKUN_LIST, DEFAULT_AKUN_VIRTUAL, DEFAULT_KATEGORI_SPENDING } from "../utils";
+import { DEFAULT_AKUN_LIST, DEFAULT_AKUN_VIRTUAL, DEFAULT_KATEGORI_SPENDING, hashPin } from "../utils";
 import { Card, Label } from "./UI";
 
 const inp = "bg-white shadow-sm border border-pink-100 rounded-lg px-2 py-1.5 text-sm text-slate-800 outline-none focus:border-pink-500/40 transition-all font-mono";
@@ -107,7 +107,6 @@ export default function SettingsView({ settings, setSettings, tx, renameKategori
           setModal({ isConfirmOnly: true, title: "Error", placeholder: "PIN wajib terdiri dari 4 sampai 6 digit!" });
           return;
         }
-        const { hashPin } = require("../utils");
         setSettings({ ...settings, pin: hashPin(p) });
         setModal({ isConfirmOnly: true, title: "Berhasil", placeholder: "PIN keamanan baru berhasil dipasang 🔒" });
       }
