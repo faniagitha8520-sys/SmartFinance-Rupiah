@@ -20,12 +20,12 @@ export default function RekapView({ c }) {
               )}</tr></thead>
               <tbody>
                 {activeMonths.map(([m,v]) => (
-                  <tr key={m} className="border-t border-white/[0.04] hover:bg-white/[0.02] transition-colors">
-                    <td className="py-2.5 pr-4 font-semibold text-white">{m}</td>
-                    <td className="py-2.5 pr-4 font-mono text-emerald-400">{fmt(v.pemasukan)}</td>
-                    <td className="py-2.5 pr-4 font-mono text-pink-400">{fmt(v.pengeluaran)}</td>
-                    <td className={`py-2.5 pr-4 font-mono font-bold ${v.net >= 0 ? 'text-emerald-400' : 'text-pink-400'}`}>{fmt(v.net)}</td>
-                    <td className={`py-2.5 pr-4 ${v.savingRate >= 0.3 ? 'text-emerald-400' : 'text-amber-400'}`}>{pct(v.savingRate)}</td>
+                  <tr key={m} className="border-t border-pink-100 hover:bg-white shadow-sm transition-colors">
+                    <td className="py-2.5 pr-4 font-semibold text-slate-800">{m}</td>
+                    <td className="py-2.5 pr-4 font-mono text-emerald-600">{fmt(v.pemasukan)}</td>
+                    <td className="py-2.5 pr-4 font-mono text-pink-600">{fmt(v.pengeluaran)}</td>
+                    <td className={`py-2.5 pr-4 font-mono font-bold ${v.net >= 0 ? 'text-emerald-600' : 'text-pink-600'}`}>{fmt(v.net)}</td>
+                    <td className={`py-2.5 pr-4 ${v.savingRate >= 0.3 ? 'text-emerald-600' : 'text-amber-600'}`}>{pct(v.savingRate)}</td>
                     <td className="py-2.5 text-slate-500">{v.txCount}</td>
                   </tr>
                 ))}

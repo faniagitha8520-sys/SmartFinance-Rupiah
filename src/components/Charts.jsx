@@ -8,8 +8,8 @@ const PINK_COLORS = ["#ec4899", "#f472b6", "#a855f7", "#8b5cf6", "#6366f1", "#81
 const CustomTooltip = ({ active, payload, label }) => {
   if (!active || !payload?.length) return null;
   return (
-    <div className="bg-[#1a1025] border border-white/10 rounded-xl px-4 py-3 shadow-xl">
-      <p className="text-sm font-medium text-white mb-1">{label}</p>
+    <div className="bg-[#1a1025] border border-pink-100 rounded-xl px-4 py-3 shadow-xl">
+      <p className="text-sm font-medium text-slate-800 mb-1">{label}</p>
       {payload.map((p, i) => (
         <p key={i} className="text-xs" style={{ color: p.color }}>{p.name}: {fmt(p.value)}</p>
       ))}

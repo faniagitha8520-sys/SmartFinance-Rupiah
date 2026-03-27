@@ -5,19 +5,19 @@ export default function DashboardView({ c, lists }) {
   return (
     <div className="space-y-6 animate-fade-in-up">
       <div>
-        <h2 className="text-xl font-bold text-white">📊 Financial Dashboard</h2>
+        <h2 className="text-xl font-bold text-slate-800">📊 Financial Dashboard</h2>
         <p className="text-sm text-slate-500 mt-0.5">Semua angka auto-update dari data transaksi</p>
       </div>
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 stagger-children">
         {[
-          { label: "Total Pemasukan", val: fmt(c.totalPemasukan), color: "text-emerald-400", accent: "from-emerald-400 to-emerald-600", icon: "💰" },
-          { label: "Potongan Rutin", val: fmt(c.totalPotongan), color: "text-amber-400", accent: "from-amber-400 to-amber-600", icon: "🔒" },
-          { label: "Pengeluaran Real", val: fmt(c.totalPengeluaranReal), color: "text-pink-400", accent: "from-pink-400 to-pink-600", icon: "💸" },
-          { label: "Net Saving", val: fmt(c.netSaving), color: c.netSaving >= 0 ? "text-emerald-400" : "text-pink-400", accent: "from-purple-400 to-purple-600", icon: "💎" },
+          { label: "Total Pemasukan", val: fmt(c.totalPemasukan), color: "text-emerald-600", accent: "from-emerald-400 to-emerald-600", icon: "💰" },
+          { label: "Potongan Rutin", val: fmt(c.totalPotongan), color: "text-amber-600", accent: "from-amber-400 to-amber-600", icon: "🔒" },
+          { label: "Pengeluaran Real", val: fmt(c.totalPengeluaranReal), color: "text-pink-600", accent: "from-pink-500 to-pink-600", icon: "💸" },
+          { label: "Net Saving", val: fmt(c.netSaving), color: c.netSaving >= 0 ? "text-emerald-600" : "text-pink-600", accent: "from-purple-400 to-purple-600", icon: "💎" },
         ].map((item, i) => (
-          <div key={i} className="relative overflow-hidden rounded-2xl bg-white/[0.03] border border-white/[0.06] p-5 backdrop-blur-sm hover:border-white/[0.12] transition-all duration-300 group hover:-translate-y-0.5 hover:shadow-lg hover:shadow-pink-900/5">
+          <div key={i} className="relative overflow-hidden rounded-2xl bg-white shadow-sm border border-pink-100 p-5 backdrop-blur-sm hover:border-pink-100 transition-all duration-300 group hover:-translate-y-0.5 hover:shadow-lg hover:shadow-pink-900/5">
             <div className={`absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r ${item.accent} opacity-80`} />
             <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
               <span>{item.icon}</span> {item.label}
@@ -35,14 +35,14 @@ export default function DashboardView({ c, lists }) {
             const s = c.saldo[a]; if (!s) return null;
             const pctTotal = c.totalAset > 0 ? s.saldoAkhir / c.totalAset : 0;
             return (
-              <div key={a} className="bg-white/[0.02] rounded-xl p-3 border border-white/[0.04] hover:border-pink-500/20 transition-all duration-200">
-                <div className="text-xs font-semibold text-pink-400 mb-1">🏦 {a}</div>
-                <div className="text-lg font-bold font-mono text-white">{fmt(s.saldoAkhir)}</div>
+              <div key={a} className="bg-white shadow-sm rounded-xl p-3 border border-pink-100 hover:border-pink-500/20 transition-all duration-200">
+                <div className="text-xs font-semibold text-pink-600 mb-1">🏦 {a}</div>
+                <div className="text-lg font-bold font-mono text-slate-800">{fmt(s.saldoAkhir)}</div>
                 <div className="text-[10px] text-slate-600 mt-1">{pct(pctTotal)} dari total</div>
                 <div className="mt-1.5"><Bar value={pctTotal} max={1} /></div>
                 <div className="flex justify-between mt-2 text-[10px]">
-                  <span className="text-emerald-400">▲ {fmt(s.masuk)}</span>
-                  <span className="text-pink-400">▼ {fmt(s.keluar)}</span>
+                  <span className="text-emerald-600">▲ {fmt(s.masuk)}</span>
+                  <span className="text-pink-600">▼ {fmt(s.keluar)}</span>
                 </div>
               </div>
             );
@@ -59,12 +59,12 @@ export default function DashboardView({ c, lists }) {
             {lists.akunVirtual.map(a => {
               const s = c.saldo[a]; if (!s) return null;
               return (
-                <div key={a} className="bg-white/[0.02] rounded-xl p-3 border-l-[3px] border-l-purple-500 border border-white/[0.04]">
-                  <div className="text-xs font-semibold text-purple-400 mb-1">📌 {a}</div>
-                  <div className="text-lg font-bold font-mono text-white">{fmt(s.saldoAkhir)}</div>
+                <div key={a} className="bg-white shadow-sm rounded-xl p-3 border-l-[3px] border-l-purple-500 border border-pink-100">
+                  <div className="text-xs font-semibold text-purple-600 mb-1">📌 {a}</div>
+                  <div className="text-lg font-bold font-mono text-slate-800">{fmt(s.saldoAkhir)}</div>
                   <div className="flex justify-between mt-2 text-[10px]">
-                    <span className="text-emerald-400">▲ {fmt(s.masuk || s.saldoAkhir + (s.keluar || 0))}</span>
-                    <span className="text-pink-400">▼ {fmt(s.keluar)}</span>
+                    <span className="text-emerald-600">▲ {fmt(s.masuk || s.saldoAkhir + (s.keluar || 0))}</span>
+                    <span className="text-pink-600">▼ {fmt(s.keluar)}</span>
                   </div>
                 </div>
               );
@@ -78,12 +78,12 @@ export default function DashboardView({ c, lists }) {
         <Label className="mb-3">📈 Quick Insights</Label>
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
           {[
-            { label: "🏥 Health Score", val: c.healthScore, sub: c.healthLabel, color: c.healthScore >= 80 ? "text-emerald-400" : c.healthScore >= 60 ? "text-amber-400" : "text-pink-400" },
-            { label: "📈 Saving Rate", val: pct(c.savingRate), sub: c.savingRate >= 0.3 ? "✅ Target 30% tercapai" : "⚠️ Below target", color: c.savingRate >= 0.3 ? "text-emerald-400" : "text-amber-400" },
-            { label: "🔥 Burn Rate", val: Math.round(c.burnRate), sub: "bulan tersisa", color: "text-white" },
-            { label: "💳 Top Spending", val: c.topSpending[0]?.[0] || "—", sub: c.topSpending[0] ? fmt(c.topSpending[0][1]) : "Belum ada data", color: "text-pink-400", small: true },
+            { label: "🏥 Health Score", val: c.healthScore, sub: c.healthLabel, color: c.healthScore >= 80 ? "text-emerald-600" : c.healthScore >= 60 ? "text-amber-600" : "text-pink-600" },
+            { label: "📈 Saving Rate", val: pct(c.savingRate), sub: c.savingRate >= 0.3 ? "✅ Target 30% tercapai" : "⚠️ Below target", color: c.savingRate >= 0.3 ? "text-emerald-600" : "text-amber-600" },
+            { label: "🔥 Burn Rate", val: Math.round(c.burnRate), sub: "bulan tersisa", color: "text-slate-800" },
+            { label: "💳 Top Spending", val: c.topSpending[0]?.[0] || "—", sub: c.topSpending[0] ? fmt(c.topSpending[0][1]) : "Belum ada data", color: "text-pink-600", small: true },
           ].map((item, i) => (
-            <div key={i} className="bg-white/[0.02] rounded-xl p-3 border border-white/[0.04]">
+            <div key={i} className="bg-white shadow-sm rounded-xl p-3 border border-pink-100">
               <div className="text-[11px] text-slate-500">{item.label}</div>
               <div className={`${item.small ? 'text-base' : 'text-2xl'} font-bold ${item.color} mt-0.5`}>{item.val}</div>
               <div className="text-[11px] text-slate-600">{item.sub}</div>

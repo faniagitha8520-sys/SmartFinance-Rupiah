@@ -42,7 +42,7 @@ export default function App() {
 
   const debouncedTx = useDebounce(tx);
   const debouncedSettings = useDebounce(settings);
-  useEffect(() => { if (!loading && debouncedTx.length > 0) { setSaving(true); saveData("transactions", debouncedTx).then(() => setSaving(false)); } }, [debouncedTx, loading]);
+  useEffect(() => { if (!loading && debouncedTx) { setSaving(true); saveData("transactions", debouncedTx).then(() => setSaving(false)); } }, [debouncedTx, loading]);
   useEffect(() => { if (!loading) { setSaving(true); saveData("settings", debouncedSettings).then(() => setSaving(false)); } }, [debouncedSettings, loading]);
 
   const akunList = settings.akunList || DEFAULT_AKUN_LIST;
@@ -144,9 +144,9 @@ export default function App() {
 
   // Premium loading screen
   if (loading) return (
-    <div className="min-h-screen flex items-center justify-center bg-[#0a0612] text-white font-sans">
+    <div className="min-h-screen flex items-center justify-center bg-pink-50 text-slate-800 font-sans">
       <div className="fixed inset-0 pointer-events-none">
-        <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-[500px] h-[500px] bg-pink-600/8 rounded-full blur-[120px]" />
+        <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-[500px] h-[500px] bg-pink-500/15 rounded-full blur-[120px]" />
       </div>
       <div className="text-center relative">
         <div className="w-16 h-16 mx-auto mb-5 rounded-2xl bg-gradient-to-br from-pink-500 to-pink-700 flex items-center justify-center shadow-2xl shadow-pink-900/40 animate-float">
@@ -154,7 +154,7 @@ export default function App() {
         </div>
         <h1 className="text-lg font-bold gradient-text-pink mb-1">Smart Finance</h1>
         <p className="text-xs text-slate-500">Memuat data keuangan...</p>
-        <div className="mt-4 w-48 h-1 mx-auto rounded-full overflow-hidden bg-white/5">
+        <div className="mt-4 w-48 h-1 mx-auto rounded-full overflow-hidden bg-white border border-pink-100">
           <div className="h-full bg-gradient-to-r from-pink-600 to-pink-400 rounded-full animate-shimmer" style={{ width: '70%' }} />
         </div>
       </div>
@@ -181,15 +181,15 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0a0612] text-white font-sans">
+    <div className="min-h-screen bg-pink-50 text-slate-800 font-sans">
       {/* Background ambiance */}
       <div className="fixed inset-0 pointer-events-none">
-        <div className="absolute top-0 left-1/4 w-[400px] h-[400px] bg-pink-600/[0.04] rounded-full blur-[100px]" />
-        <div className="absolute bottom-1/3 right-1/6 w-[300px] h-[300px] bg-purple-600/[0.03] rounded-full blur-[100px]" />
+        <div className="absolute top-0 left-1/4 w-[400px] h-[400px] bg-pink-500/10 rounded-full blur-[100px]" />
+        <div className="absolute bottom-1/3 right-1/6 w-[300px] h-[300px] bg-purple-500/10 rounded-full blur-[100px]" />
       </div>
 
       {/* Header */}
-      <header className="sticky top-0 z-50 bg-[#0a0612]/85 backdrop-blur-xl border-b border-white/[0.06]">
+      <header className="sticky top-0 z-50 bg-pink-50/85 backdrop-blur-xl border-b border-pink-100">
         <div className="max-w-5xl mx-auto px-4">
           <div className="flex items-center justify-between h-14">
             <div className="flex items-center gap-3">
@@ -202,8 +202,8 @@ export default function App() {
               </div>
             </div>
             <div className="flex items-center gap-2">
-              {saving && <span className="text-[11px] text-pink-400 animate-pulse">💾 Syncing...</span>}
-              <button onClick={handleExportCSV} className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.06] rounded-lg text-xs font-medium text-slate-400 hover:text-white transition-all duration-200">
+              {saving && <span className="text-[11px] text-pink-600 animate-pulse">💾 Syncing...</span>}
+              <button onClick={handleExportCSV} className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 bg-white shadow-sm shadow-pink-100/50 hover:bg-pink-100 border border-pink-100 rounded-lg text-xs font-medium text-slate-500 hover:text-slate-800 transition-all duration-200">
                 <Download className="w-3.5 h-3.5" /> Export
               </button>
             </div>
@@ -217,8 +217,8 @@ export default function App() {
                 <button key={t.id} onClick={() => switchTab(t.id)}
                   className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-semibold whitespace-nowrap transition-all duration-200 shrink-0 ${
                     isActive
-                      ? 'bg-pink-500/12 text-pink-400 shadow-sm shadow-pink-900/10'
-                      : 'text-slate-500 hover:text-slate-300'
+                      ? 'bg-pink-500/12 text-pink-600 shadow-sm shadow-pink-900/10'
+                      : 'text-slate-500 hover:text-slate-600'
                   }`}
                 >
                   <Icon className="w-3.5 h-3.5" />
@@ -243,7 +243,7 @@ export default function App() {
       </button>
 
       {/* Footer */}
-      <footer className="relative border-t border-white/[0.04]">
+      <footer className="relative border-t border-pink-100">
         <div className="max-w-5xl mx-auto px-4 py-4 flex items-center justify-between text-[11px] text-slate-600">
           <p>© 2026 Smart Finance</p>
           <p>Powered by Supabase</p>

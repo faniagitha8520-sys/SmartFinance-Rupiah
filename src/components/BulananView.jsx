@@ -11,7 +11,7 @@ export default function BulananView({ c, tx, settings, lists, selMonth, setSelMo
       <div className="flex justify-between items-center flex-wrap gap-3">
         <h2 className="text-xl font-bold">📅 Bulanan</h2>
         <select value={selMonth} onChange={e => setSelMonth(e.target.value)}
-          className="bg-white/[0.03] border border-white/[0.08] rounded-xl px-3 py-2 text-sm text-white outline-none focus:border-pink-500/40 transition-all">
+          className="bg-white shadow-sm border border-pink-100 rounded-xl px-3 py-2 text-sm text-slate-800 outline-none focus:border-pink-500/40 transition-all">
           {MONTHS.map(m => <option key={m} value={m}>{m}</option>)}
         </select>
       </div>
@@ -19,12 +19,12 @@ export default function BulananView({ c, tx, settings, lists, selMonth, setSelMo
       {/* Month summary */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {[
-          { label: "Pemasukan", val: fmt(stats.pemasukan || 0), color: "text-emerald-400" },
-          { label: "Pengeluaran", val: fmt(stats.pengeluaran || 0), color: "text-pink-400" },
-          { label: "Net", val: fmt(stats.net || 0), color: (stats.net || 0) >= 0 ? "text-emerald-400" : "text-pink-400" },
-          { label: "Transaksi", val: stats.txCount || 0, color: "text-white" },
+          { label: "Pemasukan", val: fmt(stats.pemasukan || 0), color: "text-emerald-600" },
+          { label: "Pengeluaran", val: fmt(stats.pengeluaran || 0), color: "text-pink-600" },
+          { label: "Net", val: fmt(stats.net || 0), color: (stats.net || 0) >= 0 ? "text-emerald-600" : "text-pink-600" },
+          { label: "Transaksi", val: stats.txCount || 0, color: "text-slate-800" },
         ].map((item, i) => (
-          <div key={i} className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-4">
+          <div key={i} className="bg-white shadow-sm border border-pink-100 rounded-2xl p-4">
             <div className="text-[11px] text-slate-500 uppercase tracking-wider">{item.label}</div>
             <div className={`text-lg font-bold font-mono mt-1 ${item.color}`}>{item.val}</div>
           </div>
@@ -40,7 +40,7 @@ export default function BulananView({ c, tx, settings, lists, selMonth, setSelMo
           <div className="space-y-2">
             {Object.entries(monthData).filter(([,v]) => v.budget > 0 || v.spent > 0).map(([k, v]) => (
               <div key={k} className="flex items-center gap-3 text-sm py-1">
-                <span className="w-28 text-white truncate shrink-0">{k}</span>
+                <span className="w-28 text-slate-800 truncate shrink-0">{k}</span>
                 <div className="flex-1"><Bar value={v.spent} max={v.budget} color="#ec4899" /></div>
                 <span className="w-28 text-right text-[11px] text-slate-500 font-mono shrink-0">{fmt(v.spent)}/{fmt(v.budget)}</span>
                 <span className="w-16 shrink-0"><StatusBadge status={v.status} /></span>
@@ -58,11 +58,11 @@ export default function BulananView({ c, tx, settings, lists, selMonth, setSelMo
         ) : (
           <div className="space-y-0.5 max-h-96 overflow-y-auto">
             {[...monthTx].reverse().map((t, i) => (
-              <div key={t.id || i} className="flex items-center gap-2 px-2 py-2 bg-white/[0.015] rounded-lg text-xs hover:bg-white/[0.04] transition-colors">
+              <div key={t.id || i} className="flex items-center gap-2 px-2 py-2 bg-white shadow-sm rounded-lg text-xs hover:bg-white shadow-sm shadow-pink-100/50 transition-colors">
                 <span className="w-16 text-slate-500 font-mono shrink-0">{t.date?.slice(5)}</span>
-                <span className="w-16 text-pink-400 font-semibold shrink-0 text-[11px]">{t.kategori}</span>
+                <span className="w-16 text-pink-600 font-semibold shrink-0 text-[11px]">{t.kategori}</span>
                 <span className="flex-1 truncate">{t.item}</span>
-                <span className={`font-mono font-semibold shrink-0 ${t.penghasilan > 0 ? 'text-emerald-400' : 'text-pink-400'}`}>
+                <span className={`font-mono font-semibold shrink-0 ${t.penghasilan > 0 ? 'text-emerald-600' : 'text-pink-600'}`}>
                   {t.penghasilan > 0 ? `+${fmt(t.penghasilan)}` : `-${fmt(t.pengeluaran)}`}
                 </span>
               </div>

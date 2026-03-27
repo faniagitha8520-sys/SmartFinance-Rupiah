@@ -2,7 +2,7 @@ import { useState, useMemo, useRef } from "react";
 import { fmt, MONTHS, TIPE_LIST, normalizeDebtType } from "../utils";
 import { Card, Label, EmptyState } from "./UI";
 
-const inp = "w-full bg-white/[0.03] border border-white/[0.08] rounded-xl px-3 py-2.5 text-sm text-white placeholder-slate-600 outline-none focus:border-pink-500/40 focus:ring-1 focus:ring-pink-500/20 transition-all font-sans";
+const inp = "w-full bg-white shadow-sm border border-pink-100 rounded-xl px-3 py-2.5 text-sm text-slate-800 placeholder-slate-600 outline-none focus:border-pink-500/40 focus:ring-1 focus:ring-pink-500/20 transition-all font-sans";
 const inpMono = inp + " font-mono";
 
 export default function InputView({ tx, addTx, updateTx, deleteTx, settings, lists }) {
@@ -63,7 +63,7 @@ export default function InputView({ tx, addTx, updateTx, deleteTx, settings, lis
         </div>
         <div className="flex gap-2">
           <button onClick={() => { setShowOCR(!showOCR); setShowForm(false); }}
-            className={`px-4 py-2 rounded-xl text-sm font-bold transition-all ${showOCR ? 'bg-pink-500 text-white shadow-lg shadow-pink-900/30' : 'bg-purple-500/10 text-purple-400 border border-purple-500/20 hover:bg-purple-500/20'}`}>
+            className={`px-4 py-2 rounded-xl text-sm font-bold transition-all ${showOCR ? 'bg-pink-500 text-white shadow-lg shadow-pink-900/30' : 'bg-purple-500/10 text-purple-600 border border-purple-500/20 hover:bg-purple-500/20'}`}>
             {showOCR ? "✕ Tutup" : "📷 Scan Struk"}
           </button>
           <button onClick={() => { setShowForm(!showForm); setShowOCR(false); if (editId) cancelEdit(); }}
@@ -80,7 +80,7 @@ export default function InputView({ tx, addTx, updateTx, deleteTx, settings, lis
           <div className="flex gap-2 mb-4">
             {[{k:"photo",l:"📷 Upload Foto"},{k:"csv",l:"📋 Paste CSV"}].map(b=>(
               <button key={b.k} onClick={()=>setOcrMode(b.k)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all border ${ocrMode===b.k ? 'bg-pink-500/12 border-pink-500/30 text-pink-400' : 'bg-transparent border-white/[0.06] text-slate-500 hover:text-white'}`}>{b.l}</button>
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all border ${ocrMode===b.k ? 'bg-pink-500/12 border-pink-500/30 text-pink-600' : 'bg-transparent border-pink-100 text-slate-500 hover:text-white'}`}>{b.l}</button>
             ))}
           </div>
           {ocrMode === "photo" && (
@@ -88,7 +88,7 @@ export default function InputView({ tx, addTx, updateTx, deleteTx, settings, lis
               <p className="text-xs text-slate-500 mb-2">Upload foto struk → Claude OCR → auto-parse ke transaksi</p>
               <input ref={fileRef} type="file" accept="image/*" capture="environment" onChange={handlePhotoUpload} className="hidden" />
               <button onClick={() => fileRef.current?.click()} disabled={ocrLoading}
-                className={`px-6 py-3 rounded-xl font-bold text-sm text-white transition-all ${ocrLoading ? 'bg-slate-700 cursor-wait' : 'bg-gradient-to-r from-purple-600 to-pink-500 hover:from-purple-500 hover:to-pink-400 shadow-lg shadow-purple-900/25'}`}>
+                className={`px-6 py-3 rounded-xl font-bold text-sm text-slate-800 transition-all ${ocrLoading ? 'bg-slate-700 cursor-wait' : 'bg-gradient-to-r from-purple-600 to-pink-500 hover:from-purple-500 hover:to-pink-400 shadow-lg shadow-purple-900/25'}`}>
                 {ocrLoading ? "⏳ Processing..." : "📷 Ambil Foto / Upload"}
               </button>
             </div>
@@ -97,26 +97,26 @@ export default function InputView({ tx, addTx, updateTx, deleteTx, settings, lis
             <div>
               <p className="text-xs text-slate-500 mb-2">Format: Tanggal,Kategori,Item,Penghasilan,Pengeluaran,Akun,Catatan,Bulan,Tipe</p>
               <textarea value={csvText} onChange={e => setCsvText(e.target.value)} placeholder="2026-03-20,Jajan,Roll Cake,0,198,Cash,Snack,Maret,Pengeluaran" className={`${inpMono} h-28 resize-y text-[11px]`} />
-              <button onClick={handleCSVImport} className="mt-2 px-5 py-2.5 bg-gradient-to-r from-pink-600 to-pink-500 text-white rounded-xl font-bold text-sm transition-all hover:from-pink-500 hover:to-pink-400">📋 Parse CSV</button>
+              <button onClick={handleCSVImport} className="mt-2 px-5 py-2.5 bg-gradient-to-r from-pink-600 to-pink-500 text-slate-800 rounded-xl font-bold text-sm transition-all hover:from-pink-500 hover:to-pink-400">📋 Parse CSV</button>
             </div>
           )}
           {ocrPreview.length > 0 && (
             <div className="mt-4">
-              <p className="text-sm font-bold text-pink-400 mb-2">✅ {ocrPreview.length} transaksi ditemukan:</p>
+              <p className="text-sm font-bold text-pink-600 mb-2">✅ {ocrPreview.length} transaksi ditemukan:</p>
               <div className="max-h-60 overflow-y-auto space-y-1">
                 {ocrPreview.map((t,i) => (
-                  <div key={i} className="flex items-center gap-2 px-3 py-1.5 bg-white/[0.02] rounded-lg text-[11px]">
+                  <div key={i} className="flex items-center gap-2 px-3 py-1.5 bg-white shadow-sm rounded-lg text-[11px]">
                     <span className="w-16 text-slate-500 font-mono shrink-0">{t.date?.slice(5)}</span>
-                    <span className="w-16 text-pink-400 font-semibold shrink-0">{t.kategori}</span>
+                    <span className="w-16 text-pink-600 font-semibold shrink-0">{t.kategori}</span>
                     <span className="flex-1 truncate">{t.item}</span>
-                    <span className={`w-16 text-right font-mono font-semibold shrink-0 ${t.pengeluaran > 0 ? 'text-pink-400' : 'text-emerald-400'}`}>{t.pengeluaran > 0 ? `-${fmt(t.pengeluaran)}` : `+${fmt(t.penghasilan)}`}</span>
-                    <button onClick={() => setOcrPreview(prev => prev.filter((_, j) => j !== i))} className="text-pink-400 hover:text-pink-300 text-[10px]">✕</button>
+                    <span className={`w-16 text-right font-mono font-semibold shrink-0 ${t.pengeluaran > 0 ? 'text-pink-600' : 'text-emerald-600'}`}>{t.pengeluaran > 0 ? `-${fmt(t.pengeluaran)}` : `+${fmt(t.penghasilan)}`}</span>
+                    <button onClick={() => setOcrPreview(prev => prev.filter((_, j) => j !== i))} className="text-pink-600 hover:text-pink-300 text-[10px]">✕</button>
                   </div>
                 ))}
               </div>
               <div className="flex gap-2 mt-3">
-                <button onClick={confirmPreview} className="px-5 py-2.5 bg-gradient-to-r from-pink-600 to-pink-500 text-white rounded-xl font-bold text-sm hover:from-pink-500 hover:to-pink-400">✅ Simpan Semua ({ocrPreview.length})</button>
-                <button onClick={() => setOcrPreview([])} className="px-4 py-2 bg-pink-500/10 border border-pink-500/20 text-pink-400 rounded-xl text-xs font-semibold">Batal</button>
+                <button onClick={confirmPreview} className="px-5 py-2.5 bg-gradient-to-r from-pink-600 to-pink-500 text-slate-800 rounded-xl font-bold text-sm hover:from-pink-500 hover:to-pink-400">✅ Simpan Semua ({ocrPreview.length})</button>
+                <button onClick={() => setOcrPreview([])} className="px-4 py-2 bg-pink-500/10 border border-pink-500/20 text-pink-600 rounded-xl text-xs font-semibold">Batal</button>
               </div>
             </div>
           )}
@@ -126,7 +126,7 @@ export default function InputView({ tx, addTx, updateTx, deleteTx, settings, lis
       {/* Manual Form */}
       {showForm && (
         <Card className={editId ? "border-amber-500/30" : "border-pink-500/20"}>
-          <Label className={`mb-3 ${editId ? 'text-amber-400' : ''}`}>{editId ? "✏️ Edit Transaksi" : "Transaksi Baru"}</Label>
+          <Label className={`mb-3 ${editId ? 'text-amber-600' : ''}`}>{editId ? "✏️ Edit Transaksi" : "Transaksi Baru"}</Label>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <div><div className="text-[11px] text-slate-500 mb-1">Tanggal</div><input type="date" value={form.date} onChange={e => setForm({...form, date: e.target.value})} className={inp} /></div>
             <div><div className="text-[11px] text-slate-500 mb-1">Tipe</div><select value={form.tipe} onChange={e => setForm({...form, tipe: e.target.value})} className={inp}>{TIPE_LIST.map(t => <option key={t} value={t}>{t}</option>)}</select></div>
@@ -139,8 +139,8 @@ export default function InputView({ tx, addTx, updateTx, deleteTx, settings, lis
           </div>
           <div className="mt-3"><div className="text-[11px] text-slate-500 mb-1">Catatan</div><input value={form.catatan} onChange={e => setForm({...form, catatan: e.target.value})} placeholder="Optional..." className={inp} /></div>
           <div className="flex gap-2 mt-4">
-            <button onClick={handleSubmit} className={`px-6 py-2.5 rounded-xl font-bold text-sm text-white transition-all active:scale-95 ${editId ? 'bg-amber-500 hover:bg-amber-400' : 'bg-gradient-to-r from-pink-600 to-pink-500 hover:from-pink-500 hover:to-pink-400 shadow-lg shadow-pink-900/25'}`}>{editId ? "✏️ Update" : "💾 Simpan"}</button>
-            {editId && <button onClick={cancelEdit} className="px-4 py-2 bg-pink-500/10 border border-pink-500/20 text-pink-400 rounded-xl text-xs font-semibold">Batal</button>}
+            <button onClick={handleSubmit} className={`px-6 py-2.5 rounded-xl font-bold text-sm text-slate-800 transition-all active:scale-95 ${editId ? 'bg-pink-100mber-500 hover:bg-pink-100mber-400' : 'bg-gradient-to-r from-pink-600 to-pink-500 hover:from-pink-500 hover:to-pink-400 shadow-lg shadow-pink-900/25'}`}>{editId ? "✏️ Update" : "💾 Simpan"}</button>
+            {editId && <button onClick={cancelEdit} className="px-4 py-2 bg-pink-500/10 border border-pink-500/20 text-pink-600 rounded-xl text-xs font-semibold">Batal</button>}
           </div>
         </Card>
       )}
@@ -153,7 +153,7 @@ export default function InputView({ tx, addTx, updateTx, deleteTx, settings, lis
           { key: "piutang", label: `Piutang (${tx.filter(t => t.tipe === "Piutang Keluar" || t.tipe === "Piutang Masuk" || t.kategori === "Piutang").length})` },
         ].map(btn => (
           <button key={btn.key} onClick={() => setFilterMode(btn.key)}
-            className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all border ${filterMode === btn.key ? 'bg-pink-500/12 border-pink-500/30 text-pink-400' : 'border-white/[0.06] text-slate-500 hover:text-white'}`}>
+            className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all border ${filterMode === btn.key ? 'bg-pink-500/12 border-pink-500/30 text-pink-600' : 'border-pink-100 text-slate-500 hover:text-white'}`}>
             {btn.label}
           </button>
         ))}
@@ -161,7 +161,7 @@ export default function InputView({ tx, addTx, updateTx, deleteTx, settings, lis
 
       {/* Search */}
       <input value={filter} onChange={e => setFilter(e.target.value)} placeholder="🔍 Cari transaksi..."
-        className="w-full bg-white/[0.03] border border-white/[0.06] rounded-2xl px-5 py-3 text-sm text-white placeholder-slate-600 outline-none focus:border-pink-500/30 transition-all" />
+        className="w-full bg-white shadow-sm border border-pink-100 rounded-2xl px-5 py-3 text-sm text-slate-800 placeholder-slate-600 outline-none focus:border-pink-500/30 transition-all" />
 
       {/* Transaction list */}
       {filtered.length === 0 ? (
@@ -170,17 +170,17 @@ export default function InputView({ tx, addTx, updateTx, deleteTx, settings, lis
         <div className="space-y-0.5">
           {filtered.slice(0, 100).map((t, i) => (
             <div key={t.id || i} onClick={() => startEdit(t)}
-              className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs cursor-pointer transition-all group ${editId === t.id ? 'bg-amber-500/10 border border-amber-500/30' : 'bg-white/[0.015] hover:bg-white/[0.04] border border-transparent'}`}>
+              className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs cursor-pointer transition-all group ${editId === t.id ? 'bg-pink-100mber-500/10 border border-amber-500/30' : 'bg-white shadow-sm hover:bg-white shadow-sm shadow-pink-100/50 border border-transparent'}`}>
               <span className="w-[70px] text-slate-500 font-mono shrink-0">{t.date?.slice(5)}</span>
-              <span className="w-[70px] text-pink-400 font-semibold text-[11px] shrink-0">{t.kategori}</span>
+              <span className="w-[70px] text-pink-600 font-semibold text-[11px] shrink-0">{t.kategori}</span>
               <span className="flex-1 truncate">{t.item}</span>
-              <span className={`w-[70px] text-right font-mono font-semibold shrink-0 ${t.penghasilan > 0 ? 'text-emerald-400' : t.pengeluaran > 0 ? 'text-pink-400' : 'text-slate-600'}`}>
+              <span className={`w-[70px] text-right font-mono font-semibold shrink-0 ${t.penghasilan > 0 ? 'text-emerald-600' : t.pengeluaran > 0 ? 'text-pink-600' : 'text-slate-600'}`}>
                 {t.penghasilan > 0 ? `+${fmt(t.penghasilan)}` : t.pengeluaran > 0 ? `-${fmt(t.pengeluaran)}` : "—"}
               </span>
               <span className="w-[80px] text-right text-slate-600 text-[10px] shrink-0 hidden sm:block">{normalizeDebtType(t.tipe)}</span>
               <span className="w-[55px] text-right text-slate-600 text-[10px] shrink-0 hidden sm:block">{t.akun}</span>
               <button onClick={(e) => { e.stopPropagation(); deleteTx(t.id); }}
-                className="opacity-0 group-hover:opacity-100 text-pink-400 hover:text-pink-300 transition-opacity text-[11px] shrink-0">✕</button>
+                className="opacity-0 group-hover:opacity-100 text-pink-600 hover:text-pink-300 transition-opacity text-[11px] shrink-0">✕</button>
             </div>
           ))}
         </div>

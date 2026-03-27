@@ -5,7 +5,7 @@ export default function DanaView({ c, settings, setSettings }) {
   const dd = settings.danaDarurat || { pengeluaranBulanan: 5000000, targetBulan: 6, saldoAwal: 0 };
   const upd = (k, v) => setSettings({ ...settings, danaDarurat: { ...dd, [k]: Number(v) || 0 } });
 
-  const inp = "w-24 bg-white/[0.03] border border-white/[0.08] rounded-lg px-2 py-1 text-sm text-white font-mono outline-none focus:border-pink-500/40 transition-all text-right";
+  const inp = "w-24 bg-white shadow-sm border border-pink-100 rounded-lg px-2 py-1 text-sm text-slate-800 font-mono outline-none focus:border-pink-500/40 transition-all text-right";
 
   return (
     <div className="space-y-6 animate-fade-in-up">
@@ -24,15 +24,15 @@ export default function DanaView({ c, settings, setSettings }) {
         <div className="flex items-end gap-6">
           <div>
             <div className="text-sm text-slate-500">Target</div>
-            <div className="text-xl font-bold font-mono text-white">{fmt(c.ddTarget)}</div>
+            <div className="text-xl font-bold font-mono text-slate-800">{fmt(c.ddTarget)}</div>
           </div>
           <div>
             <div className="text-sm text-slate-500">Terkumpul</div>
-            <div className="text-xl font-bold font-mono text-pink-400">{fmt(c.ddCurrent)}</div>
+            <div className="text-xl font-bold font-mono text-pink-600">{fmt(c.ddCurrent)}</div>
           </div>
           <div>
             <div className="text-sm text-slate-500">Progress</div>
-            <div className={`text-xl font-bold ${c.ddProgress >= 1 ? 'text-emerald-400' : 'text-amber-400'}`}>{pct(c.ddProgress)}</div>
+            <div className={`text-xl font-bold ${c.ddProgress >= 1 ? 'text-emerald-600' : 'text-amber-600'}`}>{pct(c.ddProgress)}</div>
           </div>
         </div>
         <div className="mt-4"><Bar value={c.ddProgress} max={1} color="#ec4899" /></div>

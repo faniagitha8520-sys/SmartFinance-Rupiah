@@ -22,7 +22,7 @@ export default function AnalisisView({ c, lists }) {
                 strokeDasharray={`${(healthScore / 100) * 264} 264`} className="transition-all duration-1000" />
             </svg>
             <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <span className="text-3xl font-bold text-white">{healthScore}</span>
+              <span className="text-3xl font-bold text-slate-800">{healthScore}</span>
               <span className="text-[10px] text-slate-500 uppercase tracking-wider">Score</span>
             </div>
           </div>
@@ -37,7 +37,7 @@ export default function AnalisisView({ c, lists }) {
             ].map(item => (
               <div key={item.label} className="flex items-center gap-2 text-xs">
                 <span className="w-5">{item.icon}</span>
-                <span className="w-28 text-slate-400 shrink-0">{item.label}</span>
+                <span className="w-28 text-slate-500 shrink-0">{item.label}</span>
                 <div className="flex-1"><Bar value={item.score} max={item.max} color="#ec4899" /></div>
                 <span className="w-12 text-right text-slate-500 font-mono">{item.score}/{item.max}</span>
               </div>
@@ -56,11 +56,11 @@ export default function AnalisisView({ c, lists }) {
             )}</tr></thead>
             <tbody>
               {Object.entries(c.monthStats).filter(([,v]) => v.txCount > 0).map(([m,v]) => (
-                <tr key={m} className="border-t border-white/[0.04] hover:bg-white/[0.02] transition-colors">
-                  <td className="py-2 pr-3 font-semibold text-white">{m}</td>
-                  <td className="py-2 pr-3 font-mono text-emerald-400">{fmt(v.pemasukan)}</td>
-                  <td className="py-2 pr-3 font-mono text-pink-400">{fmt(v.pengeluaran)}</td>
-                  <td className={`py-2 pr-3 font-mono font-bold ${v.net >= 0 ? 'text-emerald-400' : 'text-pink-400'}`}>{fmt(v.net)}</td>
+                <tr key={m} className="border-t border-pink-100 hover:bg-white shadow-sm transition-colors">
+                  <td className="py-2 pr-3 font-semibold text-slate-800">{m}</td>
+                  <td className="py-2 pr-3 font-mono text-emerald-600">{fmt(v.pemasukan)}</td>
+                  <td className="py-2 pr-3 font-mono text-pink-600">{fmt(v.pengeluaran)}</td>
+                  <td className={`py-2 pr-3 font-mono font-bold ${v.net >= 0 ? 'text-emerald-600' : 'text-pink-600'}`}>{fmt(v.net)}</td>
                   <td className="py-2 pr-3">{pct(v.savingRate)}</td>
                   <td className="py-2 text-slate-500">{v.txCount}</td>
                 </tr>
@@ -82,9 +82,9 @@ export default function AnalisisView({ c, lists }) {
               return (
                 <div key={k} className="flex items-center gap-3 text-sm">
                   <span className="w-5 text-center text-slate-500 font-bold">{i + 1}</span>
-                  <span className="w-32 text-white font-medium truncate">{k}</span>
+                  <span className="w-32 text-slate-800 font-medium truncate">{k}</span>
                   <div className="flex-1"><Bar value={v} max={maxVal} color="#ec4899" /></div>
-                  <span className="w-24 text-right font-mono text-pink-400 text-xs">{fmt(v)}</span>
+                  <span className="w-24 text-right font-mono text-pink-600 text-xs">{fmt(v)}</span>
                 </div>
               );
             })}

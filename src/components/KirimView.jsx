@@ -1,7 +1,7 @@
 import { fmt } from "../utils";
 import { Card, Label, BigNum } from "./UI";
 
-const inp = "bg-slate-900/60 border border-slate-700/50 rounded-lg px-3 py-2 text-sm text-white font-mono outline-none focus:border-emerald-500/50 w-36 text-right transition-all";
+const inp = "bg-slate-900/60 border border-slate-700/50 rounded-lg px-3 py-2 text-sm text-slate-800 font-mono outline-none focus:border-emerald-500/50 w-36 text-right transition-all";
 
 export default function KirimView({ c, settings, setSettings }) {
   const ki = settings.kirimIndo;
@@ -23,8 +23,8 @@ export default function KirimView({ c, settings, setSettings }) {
         ))}
       </Card>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <Card><Label>Hold (JPY)</Label><BigNum color="text-purple-400">{fmt(hold)}</BigNum><p className="text-[11px] text-slate-400 mt-1">≈ Rp{Math.round(holdIDR).toLocaleString("id-ID")}</p></Card>
-        <Card><Label>Status Kurs</Label><div className={`text-lg font-bold mt-1 ${kursOK?'text-emerald-400':'text-amber-400'}`}>{kursOK?"✅ KIRIM!":"⏳ Tunggu"}</div></Card>
+        <Card><Label>Hold (JPY)</Label><BigNum color="text-purple-600">{fmt(hold)}</BigNum><p className="text-[11px] text-slate-500 mt-1">≈ Rp{Math.round(holdIDR).toLocaleString("id-ID")}</p></Card>
+        <Card><Label>Status Kurs</Label><div className={`text-lg font-bold mt-1 ${kursOK?'text-emerald-600':'text-amber-600'}`}>{kursOK?"✅ KIRIM!":"⏳ Tunggu"}</div></Card>
       </div>
     </div>
   );

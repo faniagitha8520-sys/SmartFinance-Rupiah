@@ -1,7 +1,7 @@
 import { DEFAULT_AKUN_LIST, DEFAULT_AKUN_VIRTUAL, DEFAULT_KATEGORI_SPENDING } from "../utils";
 import { Card, Label } from "./UI";
 
-const inp = "bg-white/[0.03] border border-white/[0.08] rounded-lg px-2 py-1.5 text-sm text-white outline-none focus:border-pink-500/40 transition-all font-mono";
+const inp = "bg-white shadow-sm border border-pink-100 rounded-lg px-2 py-1.5 text-sm text-slate-800 outline-none focus:border-pink-500/40 transition-all font-mono";
 
 export default function SettingsView({ settings, setSettings, tx, renameKategori, renameAkun, resetData, lists }) {
 
@@ -50,16 +50,16 @@ export default function SettingsView({ settings, setSettings, tx, renameKategori
           {lists.kategoriSpending.map(k => {
             const linked = tx.filter(t => t.kategori === k).length;
             return (
-              <div key={k} className="flex items-center gap-2 bg-white/[0.02] rounded-lg px-2 py-1.5 border border-white/[0.04]">
-                <button onClick={() => handleRenameKat(k)} className="flex-1 text-left text-sm text-white hover:text-pink-400 truncate transition-colors">{k}</button>
+              <div key={k} className="flex items-center gap-2 bg-white shadow-sm rounded-lg px-2 py-1.5 border border-pink-100">
+                <button onClick={() => handleRenameKat(k)} className="flex-1 text-left text-sm text-slate-800 hover:text-pink-600 truncate transition-colors">{k}</button>
                 <span className="text-[10px] text-slate-600 shrink-0">{linked}tx</span>
                 <input type="number" value={settings.budgets[k] || 0} onChange={e => setSettings({...settings, budgets: {...settings.budgets, [k]: Number(e.target.value)||0}})} className={`${inp} !w-20 text-right text-[11px]`} />
-                <button onClick={() => handleDeleteKat(k)} className="text-pink-500/40 hover:text-pink-400 text-[11px] transition-colors">✕</button>
+                <button onClick={() => handleDeleteKat(k)} className="text-pink-500/40 hover:text-pink-600 text-[11px] transition-colors">✕</button>
               </div>
             );
           })}
         </div>
-        <button onClick={handleAddKat} className="mt-3 px-4 py-2 bg-pink-500/10 border border-pink-500/20 text-pink-400 rounded-xl text-xs font-bold hover:bg-pink-500/20 transition-all">+ Tambah Kategori</button>
+        <button onClick={handleAddKat} className="mt-3 px-4 py-2 bg-pink-500/10 border border-pink-500/20 text-pink-600 rounded-xl text-xs font-bold hover:bg-pink-500/20 transition-all">+ Tambah Kategori</button>
       </Card>
 
       {/* Potongan Rutin */}
@@ -79,17 +79,17 @@ export default function SettingsView({ settings, setSettings, tx, renameKategori
             const isVirtual = lists.akunVirtual.includes(a);
             const linked = tx.filter(t => t.akun === a).length;
             return (
-              <div key={a} className="flex items-center gap-2 bg-white/[0.02] rounded-lg px-3 py-2 border border-white/[0.04]">
-                <span className={`text-sm font-semibold ${isVirtual ? 'text-purple-400' : 'text-pink-400'}`}>{isVirtual ? '📌' : '🏦'}</span>
-                <button onClick={() => handleRenameAkun(a)} className="flex-1 text-left text-sm text-white hover:text-pink-400 transition-colors">{a}</button>
-                <span className={`text-[10px] px-2 py-0.5 rounded-full ${isVirtual ? 'bg-purple-500/10 text-purple-400' : 'bg-pink-500/10 text-pink-400'} font-semibold`}>{isVirtual ? 'Virtual' : 'Real'}</span>
+              <div key={a} className="flex items-center gap-2 bg-white shadow-sm rounded-lg px-3 py-2 border border-pink-100">
+                <span className={`text-sm font-semibold ${isVirtual ? 'text-purple-600' : 'text-pink-600'}`}>{isVirtual ? '📌' : '🏦'}</span>
+                <button onClick={() => handleRenameAkun(a)} className="flex-1 text-left text-sm text-slate-800 hover:text-pink-600 transition-colors">{a}</button>
+                <span className={`text-[10px] px-2 py-0.5 rounded-full ${isVirtual ? 'bg-purple-500/10 text-purple-600' : 'bg-pink-500/10 text-pink-600'} font-semibold`}>{isVirtual ? 'Virtual' : 'Real'}</span>
                 <span className="text-[10px] text-slate-600">{linked}tx</span>
-                <button onClick={() => handleDeleteAkun(a)} className="text-pink-500/40 hover:text-pink-400 text-[11px] transition-colors">✕</button>
+                <button onClick={() => handleDeleteAkun(a)} className="text-pink-500/40 hover:text-pink-600 text-[11px] transition-colors">✕</button>
               </div>
             );
           })}
         </div>
-        <button onClick={handleAddAkun} className="mt-3 px-4 py-2 bg-pink-500/10 border border-pink-500/20 text-pink-400 rounded-xl text-xs font-bold hover:bg-pink-500/20 transition-all">+ Tambah Akun</button>
+        <button onClick={handleAddAkun} className="mt-3 px-4 py-2 bg-pink-500/10 border border-pink-500/20 text-pink-600 rounded-xl text-xs font-bold hover:bg-pink-500/20 transition-all">+ Tambah Akun</button>
       </Card>
 
       {/* PIN & OCR */}
@@ -98,8 +98,8 @@ export default function SettingsView({ settings, setSettings, tx, renameKategori
         <div className="space-y-3">
           <div className="flex items-center gap-3 flex-wrap">
             <span className="text-sm">PIN Lock:</span>
-            <span className={`text-xs px-2 py-0.5 rounded-full font-semibold ${settings.pin ? 'bg-emerald-500/10 text-emerald-400' : 'bg-white/[0.04] text-slate-500'}`}>{settings.pin ? '🔒 Aktif' : '🔓 Nonaktif'}</span>
-            <button onClick={handleSetPin} className="px-3 py-1.5 bg-pink-500/10 border border-pink-500/20 text-pink-400 rounded-lg text-xs font-semibold hover:bg-pink-500/20 transition-all">{settings.pin ? 'Ubah PIN' : 'Set PIN'}</button>
+            <span className={`text-xs px-2 py-0.5 rounded-full font-semibold ${settings.pin ? 'bg-pink-100merald-500/10 text-emerald-600' : 'bg-white shadow-sm shadow-pink-100/50 text-slate-500'}`}>{settings.pin ? '🔒 Aktif' : '🔓 Nonaktif'}</span>
+            <button onClick={handleSetPin} className="px-3 py-1.5 bg-pink-500/10 border border-pink-500/20 text-pink-600 rounded-lg text-xs font-semibold hover:bg-pink-500/20 transition-all">{settings.pin ? 'Ubah PIN' : 'Set PIN'}</button>
           </div>
           <div>
             <span className="text-sm block mb-1">Anthropic API Key (untuk OCR)</span>

@@ -23,11 +23,11 @@ export default function HutangView({ c, tx }) {
       {/* Summary */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         {[
-          { label: "Total Hutang", val: fmt(c.totalHutang), color: "text-pink-400", icon: "📊" },
-          { label: "Sudah Dibayar", val: fmt(c.totalBayar), color: "text-emerald-400", icon: "✅" },
-          { label: "Sisa Hutang", val: fmt(c.sisaHutang), color: c.sisaHutang > 0 ? "text-pink-400" : "text-emerald-400", icon: "💳" },
+          { label: "Total Hutang", val: fmt(c.totalHutang), color: "text-pink-600", icon: "📊" },
+          { label: "Sudah Dibayar", val: fmt(c.totalBayar), color: "text-emerald-600", icon: "✅" },
+          { label: "Sisa Hutang", val: fmt(c.sisaHutang), color: c.sisaHutang > 0 ? "text-pink-600" : "text-emerald-600", icon: "💳" },
         ].map((item, i) => (
-          <div key={i} className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-4">
+          <div key={i} className="bg-white shadow-sm border border-pink-100 rounded-2xl p-4">
             <div className="text-[11px] text-slate-500 uppercase tracking-wider">{item.icon} {item.label}</div>
             <div className={`text-xl font-bold font-mono mt-1 ${item.color}`}>{item.val}</div>
           </div>
@@ -37,11 +37,11 @@ export default function HutangView({ c, tx }) {
       {/* Piutang Summary */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         {[
-          { label: "Total Piutang", val: fmt(c.totalPiutangOut), color: "text-purple-400", icon: "📤" },
-          { label: "Sudah Kembali", val: fmt(c.totalPiutangIn), color: "text-emerald-400", icon: "📥" },
-          { label: "Sisa Piutang", val: fmt(c.sisaPiutang), color: c.sisaPiutang > 0 ? "text-purple-400" : "text-emerald-400", icon: "💰" },
+          { label: "Total Piutang", val: fmt(c.totalPiutangOut), color: "text-purple-600", icon: "📤" },
+          { label: "Sudah Kembali", val: fmt(c.totalPiutangIn), color: "text-emerald-600", icon: "📥" },
+          { label: "Sisa Piutang", val: fmt(c.sisaPiutang), color: c.sisaPiutang > 0 ? "text-purple-600" : "text-emerald-600", icon: "💰" },
         ].map((item, i) => (
-          <div key={i} className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-4">
+          <div key={i} className="bg-white shadow-sm border border-pink-100 rounded-2xl p-4">
             <div className="text-[11px] text-slate-500 uppercase tracking-wider">{item.icon} {item.label}</div>
             <div className={`text-xl font-bold font-mono mt-1 ${item.color}`}>{item.val}</div>
           </div>
@@ -58,14 +58,14 @@ export default function HutangView({ c, tx }) {
             {people.map(name => {
               const p = getPersonTx(name);
               return (
-                <div key={name} className="bg-white/[0.02] rounded-xl p-3 border border-white/[0.04]">
+                <div key={name} className="bg-white shadow-sm rounded-xl p-3 border border-pink-100">
                   <div className="flex justify-between items-center mb-2">
-                    <span className="font-semibold text-white">{name}</span>
-                    <span className={`font-mono text-sm font-bold ${p.sisa > 0 ? 'text-pink-400' : 'text-emerald-400'}`}>{p.sisa > 0 ? `Sisa: ${fmt(p.sisa)}` : "✅ Lunas"}</span>
+                    <span className="font-semibold text-slate-800">{name}</span>
+                    <span className={`font-mono text-sm font-bold ${p.sisa > 0 ? 'text-pink-600' : 'text-emerald-600'}`}>{p.sisa > 0 ? `Sisa: ${fmt(p.sisa)}` : "✅ Lunas"}</span>
                   </div>
                   <div className="flex gap-4 text-[11px] text-slate-500">
-                    <span>Hutang: <span className="text-pink-400 font-mono">{fmt(p.totalH)}</span></span>
-                    <span>Bayar: <span className="text-emerald-400 font-mono">{fmt(p.totalB)}</span></span>
+                    <span>Hutang: <span className="text-pink-600 font-mono">{fmt(p.totalH)}</span></span>
+                    <span>Bayar: <span className="text-emerald-600 font-mono">{fmt(p.totalB)}</span></span>
                   </div>
                 </div>
               );
