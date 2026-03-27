@@ -7,9 +7,9 @@ export const MONTHS = ["Januari","Februari","Maret","April","Mei","Juni","Juli",
 // ====== DEFAULTS ======
 export const DEFAULT_AKUN_LIST = ["Cash","BCA","BRI","Mandiri","GoPay","OVO","Dana","ShopeePay","Dana Darurat"];
 export const DEFAULT_AKUN_VIRTUAL = ["Dana Darurat"];
-export const TIPE_LIST = ["Pemasukan","Pengeluaran","Investasi","Zakat/Donasi","Pajak","Transfer Masuk","Transfer Keluar","Hutang Masuk","Bayar Hutang","Piutang Keluar","Piutang Masuk","Alokasi Virtual"];
+export const TIPE_LIST = ["Pemasukan","Pengeluaran","Investasi","Tabungan","Zakat/Donasi","Pajak","Transfer Masuk","Transfer Keluar","Hutang Masuk","Bayar Hutang","Piutang Keluar","Piutang Masuk","Alokasi Virtual"];
 export const normalizeDebtType = (tipe) => tipe === "Hutang Catat" ? "Bayar Hutang" : tipe;
-export const DEFAULT_KATEGORI_SPENDING = ["Rokok","Jajan","Logistik","Transport","Hobi","Komunikasi","Subscription","Admin/Tax","Gadget","Perabot","Pakaian","Kesehatan/Obat","Perawatan Diri","Olahraga/Gym","Makan di Luar","Kendaraan","Pendidikan/Kursus","Hadiah/Oleh-oleh","Ongkos Kirim","Biaya Visa/Dokumen","Wisata/Jalan-jalan","Donasi/Sedekah","Lain-lain"];
+export const DEFAULT_KATEGORI_SPENDING = ["Tabungan","Rokok","Jajan","Logistik","Transport","Hobi","Komunikasi","Subscription","Admin/Tax","Gadget","Perabot","Pakaian","Kesehatan/Obat","Perawatan Diri","Olahraga/Gym","Makan di Luar","Kendaraan","Pendidikan/Kursus","Hadiah/Oleh-oleh","Ongkos Kirim","Biaya Visa/Dokumen","Wisata/Jalan-jalan","Donasi/Sedekah","Lain-lain"];
 export const KATEGORI_SYSTEM = ["Gaji","Saldo Awal","Potongan","Transfer","Hutang","Piutang"];
 
 export const DEFAULT_BUDGETS = {Rokok:500000,Jajan:500000,Logistik:300000,Transport:200000,Hobi:300000,Komunikasi:100000,Subscription:200000,"Admin/Tax":0,Gadget:500000,Perabot:0,Pakaian:300000,"Kesehatan/Obat":0,"Perawatan Diri":200000,"Olahraga/Gym":0,"Makan di Luar":500000,Kendaraan:0,"Pendidikan/Kursus":0,"Hadiah/Oleh-oleh":0,"Ongkos Kirim":100000,"Biaya Visa/Dokumen":0,"Wisata/Jalan-jalan":0,"Donasi/Sedekah":0,"Lain-lain":0};

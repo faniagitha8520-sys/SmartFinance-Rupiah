@@ -12,6 +12,8 @@ export default function InputView({ tx, addTx, updateTx, deleteTx, settings, lis
   const [filterMode, setFilterMode] = useState("all");
   const [showForm, setShowForm] = useState(false);
   const [editId, setEditId] = useState(null);
+  const [showAddKat, setShowAddKat] = useState(false);
+  const [newKatName, setNewKatName] = useState("");
   const [showOCR, setShowOCR] = useState(false);
   const [ocrLoading, setOcrLoading] = useState(false);
   const [ocrPreview, setOcrPreview] = useState([]);
@@ -53,6 +55,15 @@ export default function InputView({ tx, addTx, updateTx, deleteTx, settings, lis
     } catch (err) { alert("Error: " + err.message); } finally { setOcrLoading(false); if (fileRef.current) fileRef.current.value = ""; }
   };
   const confirmPreview = () => { ocrPreview.forEach(t => addTx(t)); setOcrPreview([]); setCsvText(""); setShowOCR(false); };
+  
+  const handleQuickAddKat = () => {
+    const t = newKatName.trim();
+    if (!t || lists.kategoriAll.includes(t)) { setShowAddKat(false); setNewKatName(""); return; }
+    setSettings({ ...settings, kategoriSpending: [...lists.kategoriSpending, t], budgets: { ...settings.budgets, [t]: 0 } });
+    setForm({ ...form, kategori: t });
+    setShowAddKat(false);
+    setNewKatName("");
+  };
 
   return (
     <div className="space-y-4 animate-fade-in-up">
@@ -130,7 +141,16 @@ export default function InputView({ tx, addTx, updateTx, deleteTx, settings, lis
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <div><div className="text-[11px] text-slate-500 mb-1">Tanggal</div><input type="date" value={form.date} onChange={e => setForm({...form, date: e.target.value})} className={inp} /></div>
             <div><div className="text-[11px] text-slate-500 mb-1">Tipe</div><select value={form.tipe} onChange={e => setForm({...form, tipe: e.target.value})} className={inp}>{TIPE_LIST.map(t => <option key={t} value={t}>{t}</option>)}</select></div>
-            <div><div className="text-[11px] text-slate-500 mb-1">Kategori</div><select value={form.kategori} onChange={e => setForm({...form, kategori: e.target.value})} className={inp}><option value="">— Pilih —</option>{lists.kategoriAll.map(k => <option key={k} value={k}>{k}</option>)}</select></div>
+            <div className="relative">
+              <div className="text-[11px] text-slate-500 mb-1 flex justify-between items-center">
+                <span>Kategori</span>
+                <button onClick={() => setShowAddKat(true)} className="text-[10px] text-pink-600 font-bold hover:underline">+ Baru</button>
+              </div>
+              <select value={form.kategori} onChange={e => setForm({...form, kategori: e.target.value})} className={inp}>
+                <option value="">— Pilih —</option>
+                {lists.kategoriAll.map(k => <option key={k} value={k}>{k}</option>)}
+              </select>
+            </div>
             <div><div className="text-[11px] text-slate-500 mb-1">Akun</div><select value={form.akun} onChange={e => setForm({...form, akun: e.target.value})} className={inp}>{lists.akunList.map(a => <option key={a} value={a}>{a}</option>)}</select></div>
             <div><div className="text-[11px] text-slate-500 mb-1">Item</div><input value={form.item} onChange={e => setForm({...form, item: e.target.value})} placeholder="Nama item..." className={inp} /></div>
             <div><div className="text-[11px] text-slate-500 mb-1">Bulan</div><select value={form.bulan} onChange={e => setForm({...form, bulan: e.target.value})} className={inp}>{MONTHS.map(m => <option key={m} value={m}>{m}</option>)}</select></div>
@@ -183,6 +203,20 @@ export default function InputView({ tx, addTx, updateTx, deleteTx, settings, lis
                 className="opacity-0 group-hover:opacity-100 text-pink-600 hover:text-pink-300 transition-opacity text-[11px] shrink-0">✕</button>
             </div>
           ))}
+        </div>
+      )}
+
+      {/* Quick Add Modal */}
+      {showAddKat && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-fade-in">
+          <div className="w-full max-w-xs bg-white rounded-2xl shadow-2xl p-6 border border-pink-100 animate-float">
+            <h3 className="text-sm font-bold text-slate-800 mb-4">Tambah Kategori Baru</h3>
+            <input autoFocus value={newKatName} onChange={e => setNewKatName(e.target.value)} placeholder="Misal: Tabungan Nikah" className={inp} onKeyDown={e => e.key === "Enter" && handleQuickAddKat()} />
+            <div className="flex gap-2 mt-4">
+              <button onClick={handleQuickAddKat} className="flex-1 py-2 bg-pink-600 text-white rounded-xl text-xs font-bold shadow-lg shadow-pink-900/20">Tambah</button>
+              <button onClick={() => { setShowAddKat(false); setNewKatName(""); }} className="flex-1 py-2 bg-slate-100 text-slate-500 rounded-xl text-xs font-bold">Batal</button>
+            </div>
+          </div>
         </div>
       )}
     </div>

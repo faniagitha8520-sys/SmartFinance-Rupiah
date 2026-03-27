@@ -59,7 +59,7 @@ export default function App() {
       const allMasuk = akunTx.filter(t => !EXCLUDED.includes(t.tipe)).reduce((s, t) => s + (t.penghasilan || 0), 0);
       const allKeluar = akunTx.filter(t => !EXCLUDED.includes(t.tipe)).reduce((s, t) => s + (t.pengeluaran || 0), 0);
       const masukDisplay = akunTx.filter(t => t.tipe === "Pemasukan").reduce((s, t) => s + (t.penghasilan || 0), 0);
-      const keluarDisplay = akunTx.filter(t => (t.tipe === "Pengeluaran" || t.tipe === "Bayar Hutang" || t.tipe === "Investasi" || t.tipe === "Zakat/Donasi" || t.tipe === "Pajak")).reduce((s, t) => s + (t.pengeluaran || 0), 0);
+      const keluarDisplay = akunTx.filter(t => (t.tipe === "Pengeluaran" || t.tipe === "Bayar Hutang" || t.tipe === "Investasi" || t.tipe === "Tabungan" || t.tipe === "Zakat/Donasi" || t.tipe === "Pajak")).reduce((s, t) => s + (t.pengeluaran || 0), 0);
       saldo[a] = { masuk: masukDisplay, keluar: keluarDisplay, saldoAkhir: allMasuk - allKeluar };
     });
     const totalAsetReal = akunReal.reduce((s, a) => s + Math.max(saldo[a]?.saldoAkhir || 0, 0), 0);
@@ -69,14 +69,16 @@ export default function App() {
     const totalPotongan = tx.filter(t => t.kategori === "Potongan" || t.tipe === "Bayar Hutang" || t.tipe === "Pajak" || t.tipe === "Zakat/Donasi").reduce((s, t) => s + t.pengeluaran, 0);
     const totalPengeluaranReal = tx.filter(t => t.tipe === "Pengeluaran" && t.kategori !== "Potongan" && !["Saldo Awal","Transfer","Hutang","Piutang"].includes(t.kategori)).reduce((s, t) => s + t.pengeluaran, 0);
     const totalInvestasi = tx.filter(t => t.tipe === "Investasi").reduce((s, t) => s + t.pengeluaran, 0);
-    const netSaving = totalPemasukan - totalPengeluaranReal - totalPotongan; // Investment is considered saved funds, excluded here so SR stays high
+    const totalTabungan = tx.filter(t => t.tipe === "Tabungan").reduce((s, t) => s + t.pengeluaran, 0);
+    const netSaving = totalPemasukan - totalPengeluaranReal - totalPotongan; // Investment/Savings are considered saved funds, excluded here so SR stays high
     const monthStats = {}; MONTHS.forEach(m => {
       const mTx = byMonth[m];
       const pemasukan = mTx.filter(t => t.tipe === "Pemasukan").reduce((s, t) => s + t.penghasilan, 0);
       const pengeluaran = mTx.filter(t => t.tipe === "Pengeluaran" || t.tipe === "Bayar Hutang" || t.tipe === "Pajak" || t.tipe === "Zakat/Donasi").reduce((s, t) => s + t.pengeluaran, 0);
       const investasi = mTx.filter(t => t.tipe === "Investasi").reduce((s, t) => s + t.pengeluaran, 0);
-      const net = pemasukan - pengeluaran - investasi;
-      monthStats[m] = { pemasukan, pengeluaran, investasi, net, savingRate: pemasukan > 0 ? (pemasukan - pengeluaran) / pemasukan : 0, txCount: mTx.length };
+      const tabungan = mTx.filter(t => t.tipe === "Tabungan").reduce((s, t) => s + t.pengeluaran, 0);
+      const net = pemasukan - pengeluaran - investasi - tabungan;
+      monthStats[m] = { pemasukan, pengeluaran, investasi, tabungan, net, savingRate: pemasukan > 0 ? (pemasukan - pengeluaran) / pemasukan : 0, txCount: mTx.length };
     });
     const budgetData = {}; MONTHS.forEach(m => {
       budgetData[m] = {}; kategoriSpending.forEach(k => {
@@ -119,7 +121,7 @@ export default function App() {
     const avgMonthlySpend = totalPotongan + totalPengeluaranReal;
     const burnRate = avgMonthlySpend > 0 ? totalAset / avgMonthlySpend : 99;
     const mainBankFree = Math.max((saldo["BCA"]?.saldoAkhir || 0) - totalAsetVirtual, 0);
-    return { saldo, totalAset, totalAsetReal, totalAsetVirtual, mainBankFree, totalPemasukan, totalPotongan, totalPengeluaranReal, totalInvestasi, netSaving, monthStats, budgetData, byMonth, totalHutang, totalBayar, sisaHutang, hutangMasuk, bayarHutang, totalPiutangOut, totalPiutangIn, sisaPiutang, piutangKeluar, piutangMasuk, healthScore, healthLabel, savingRate, savingScore, budgetScore, ddScore, hutangScore, diversScore, ddTarget, ddCurrent, ddProgress, topSpending, burnRate, spendingByKat, activeAkun };
+    return { saldo, totalAset, totalAsetReal, totalAsetVirtual, mainBankFree, totalPemasukan, totalPotongan, totalPengeluaranReal, totalInvestasi, totalTabungan, netSaving, monthStats, budgetData, byMonth, totalHutang, totalBayar, sisaHutang, hutangMasuk, bayarHutang, totalPiutangOut, totalPiutangIn, sisaPiutang, piutangKeluar, piutangMasuk, healthScore, healthLabel, savingRate, savingScore, budgetScore, ddScore, hutangScore, diversScore, ddTarget, ddCurrent, ddProgress, topSpending, burnRate, spendingByKat, activeAkun };
   }, [tx, settings, akunList, akunVirtual, akunReal, kategoriSpending]);
 
   const addTx = useCallback((newTx) => { setTx(prev => [...prev, { ...newTx, id: uid() }]); }, []);

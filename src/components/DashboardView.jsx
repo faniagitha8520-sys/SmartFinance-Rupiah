@@ -16,7 +16,8 @@ export default function DashboardView({ c, lists }) {
           { label: "Potongan Rutin", val: fmt(c.totalPotongan), color: "text-amber-600", accent: "from-amber-400 to-amber-600", icon: "🔒" },
           { label: "Pengeluaran Real", val: fmt(c.totalPengeluaranReal), color: "text-pink-600", accent: "from-pink-500 to-pink-600", icon: "💸" },
           { label: "Investasi", val: fmt(c.totalInvestasi), color: "text-blue-600", accent: "from-blue-400 to-blue-600", icon: "📈" },
-          { label: "Net Saving", val: fmt(c.netSaving), color: c.netSaving >= 0 ? "text-emerald-600" : "text-pink-600", accent: "from-purple-400 to-purple-600", icon: "💎" },
+          { label: "Tabungan", val: fmt(c.totalTabungan), color: "text-purple-600", accent: "from-purple-400 to-purple-600", icon: "🏦" },
+          { label: "Net Saving", val: fmt(c.netSaving), color: c.netSaving >= 0 ? "text-emerald-600" : "text-pink-600", accent: "from-emerald-400 to-emerald-600", icon: "💎" },
         ].map((item, i) => (
           <div key={i} className="relative overflow-hidden rounded-2xl bg-white shadow-sm border border-pink-100 p-5 backdrop-blur-sm hover:border-pink-100 transition-all duration-300 group hover:-translate-y-0.5 hover:shadow-lg hover:shadow-pink-900/5">
             <div className={`absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r ${item.accent} opacity-80`} />
