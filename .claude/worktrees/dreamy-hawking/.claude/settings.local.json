@@ -1,0 +1,32 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__Claude_Preview__preview_start",
+      "Bash(npm run:*)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:5173)",
+      "Bash(curl -s \"https://gswfvvcaoiqevdcsnbhr.supabase.co/rest/v1/laporan?select=key,updated_at&apikey=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdzd2Z2dmNhb2lxZXZkY3NuYmhyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ1Mjg0NTgsImV4cCI6MjA5MDEwNDQ1OH0.XTt2mEbkmhfN_x-BUBZ5CRIcVSWyp_sFX3fbKID4pzE\")",
+      "Bash(curl -s \"https://gswfvvcaoiqevdcsnbhr.supabase.co/rest/v1/laporan?key=eq.transactions&select=value&apikey=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdzd2Z2dmNhb2lxZXZkY3NuYmhyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ1Mjg0NTgsImV4cCI6MjA5MDEwNDQ1OH0.XTt2mEbkmhfN_x-BUBZ5CRIcVSWyp_sFX3fbKID4pzE\")",
+      "Bash(curl -s \"https://gswfvvcaoiqevdcsnbhr.supabase.co/rest/v1/laporan?key=eq.transactions&select=value&apikey=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdzd2Z2dmNhb2lxZXZkY3NuYmhyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ1Mjg0NTgsImV4cCI6MjA5MDEwNDQ1OH0.XTt2mEbkmhfN_x-BUBZ5CRIcVSWyp_sFX3fbKID4pzE\" -o /tmp/supabase_tx.json)",
+      "Bash(node -e \"const d=require\\(''/tmp/supabase_tx.json''\\); const v=d[0]?.value; console.log\\(''Type:'', typeof v, ''| IsArray:'', Array.isArray\\(v\\), ''| Length:'', v?.length ?? ''null''\\); if\\(v?.length > 0\\) console.log\\(''First item:'', JSON.stringify\\(v[0]\\).substring\\(0,200\\)\\)\")",
+      "Bash(curl -s \"https://gswfvvcaoiqevdcsnbhr.supabase.co/rest/v1/laporan?key=eq.transactions&select=value&apikey=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdzd2Z2dmNhb2lxZXZkY3NuYmhyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ1Mjg0NTgsImV4cCI6MjA5MDEwNDQ1OH0.XTt2mEbkmhfN_x-BUBZ5CRIcVSWyp_sFX3fbKID4pzE\" -o supabase_check.json)",
+      "Bash(node -e \"const d=require\\(''./supabase_check.json''\\); const v=d[0]?.value; console.log\\(''Length:'', v?.length ?? ''null''\\); if\\(v?.length>0\\) console.log\\(''Sample:'', JSON.stringify\\(v[0]\\).substring\\(0,150\\)\\)\")",
+      "Bash(curl -s \"https://bvrtunobcfrtzzipgivl.supabase.co/rest/v1/laporan?select=key,updated_at&apikey=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ2cnR1bm9iY2ZydHp6aXBnaXZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQwMTM5MDgsImV4cCI6MjA4OTU4OTkwOH0.sh08k5mey8oTgJ-iImt1I7X9mAYjCToYgUzczBDmSAk\")",
+      "Bash(curl -s \"https://bvrtunobcfrtzzipgivl.supabase.co/rest/v1/laporan?key=eq.transactions&select=value&apikey=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ2cnR1bm9iY2ZydHp6aXBnaXZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQwMTM5MDgsImV4cCI6MjA4OTU4OTkwOH0.sh08k5mey8oTgJ-iImt1I7X9mAYjCToYgUzczBDmSAk\" -o fani_tx.json)",
+      "Bash(node -e \"const d=require\\(''./fani_tx.json''\\); const v=d[0]?.value; console.log\\(''Length:'', v?.length ?? ''null''\\); if\\(v?.length>0\\) { v.slice\\(0,5\\).forEach\\(t => console.log\\(t.date, t.item, t.akun, ''in:''+t.penghasilan, ''out:''+t.pengeluaran\\)\\) }\")",
+      "Bash(node -e \"const d=require\\(''./fani_tx.json''\\); const v=d[0]?.value; v.slice\\(-10\\).forEach\\(t => console.log\\(t.date, ''|'', t.item, ''|'', t.akun, ''| in:''+t.penghasilan, ''| out:''+t.pengeluaran, ''|'', t.tipe\\)\\)\")",
+      "Bash(curl -s \"https://jueidkdfzbqnwnvpurbs.supabase.co/rest/v1/laporan?select=key,updated_at&apikey=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp1ZWlka2RmemJxbndudnB1cmJzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ1NTI3NTYsImV4cCI6MjA5MDEyODc1Nn0.nfBh9hN7rf3-aLaTVRLGWDM_6PV4_A98FNmpxy7c1k4\")",
+      "Bash(curl -s \"https://jueidkdfzbqnwnvpurbs.supabase.co/rest/v1/laporan?key=eq.transactions&select=value&apikey=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp1ZWlka2RmemJxbndudnB1cmJzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ1NTI3NTYsImV4cCI6MjA5MDEyODc1Nn0.nfBh9hN7rf3-aLaTVRLGWDM_6PV4_A98FNmpxy7c1k4\" -o fani_tx3.json)",
+      "Bash(node -e \"const d=require\\(''./fani_tx3.json''\\); const v=d[0]?.value; console.log\\(''Length:'', v?.length ?? ''null''\\); if\\(v?.length>0\\) { v.slice\\(0,5\\).forEach\\(t => console.log\\(t.date, ''|'', t.item, ''|'', t.akun, ''| in:''+t.penghasilan, ''| out:''+t.pengeluaran, ''|'', t.tipe\\)\\); console.log\\(''---''\\); v.slice\\(-5\\).forEach\\(t => console.log\\(t.date, ''|'', t.item, ''|'', t.akun, ''| in:''+t.penghasilan, ''| out:''+t.pengeluaran, ''|'', t.tipe\\)\\) }\")",
+      "Bash(curl -s \"https://gswfvvcaoiqevdcsnbhr.supabase.co/rest/v1/laporan?key=eq.settings&select=value&apikey=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdzd2Z2dmNhb2lxZXZkY3NuYmhyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ1Mjg0NTgsImV4cCI6MjA5MDEwNDQ1OH0.XTt2mEbkmhfN_x-BUBZ5CRIcVSWyp_sFX3fbKID4pzE\" -o fani_settings.json)",
+      "Bash(node -e \"const d=require\\(''./fani_settings.json''\\); console.log\\(JSON.stringify\\(d[0]?.value\\).substring\\(0,200\\)\\)\")",
+      "Bash(curl -s \"https://jueidkdfzbqnwnvpurbs.supabase.co/rest/v1/laporan?key=eq.transactions&select=value&apikey=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp1ZWlka2RmemJxbndudnB1cmJzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ1NTI3NTYsImV4cCI6MjA5MDEyODc1Nn0.nfBh9hN7rf3-aLaTVRLGWDM_6PV4_A98FNmpxy7c1k4\")",
+      "Bash(gh pr:*)",
+      "Bash(node -e \"const d=require\\(''''fs''''\\).readFileSync\\(0,''''utf8''''\\);const j=JSON.parse\\(d\\);console.log\\(j.html_url||j.message||JSON.stringify\\(j\\)\\)\")",
+      "Bash(curl -s -H 'Authorization: token ghp_HJqqeEj74aluqNycXXiWWhPhDKoOOD04D5uIu' https://api.github.com/user)",
+      "Bash(node -e \"const d=require\\(''''fs''''\\).readFileSync\\(0,''''utf8''''\\);const j=JSON.parse\\(d\\);console.log\\(j.login||j.message\\)\")",
+      "Bash(node -e \":*)",
+      "Bash(npm install:*)",
+      "Bash(npx vite:*)"
+    ]
+  }
+}

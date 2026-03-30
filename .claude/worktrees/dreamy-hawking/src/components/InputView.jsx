@@ -1,12 +1,11 @@
 import { useState, useMemo, useRef } from "react";
-import { fmt, MONTHS, TIPE_LIST, normalizeDebtType, uid } from "../utils";
+import { fmt, MONTHS, TIPE_LIST, normalizeDebtType } from "../utils";
 import { Card, Label, EmptyState } from "./UI";
-import TransactionReviewTable from "./TransactionReviewTable";
 
 const inp = "w-full bg-white shadow-sm border border-pink-100 rounded-xl px-3 py-2.5 text-sm text-slate-800 placeholder-slate-600 outline-none focus:border-pink-500/40 focus:ring-1 focus:ring-pink-500/20 transition-all font-sans";
 const inpMono = inp + " font-mono";
 
-export default function InputView({ tx, addTx, addBulkTx, updateTx, deleteTx, settings, lists }) {
+export default function InputView({ tx, addTx, updateTx, deleteTx, settings, lists }) {
   const empty = { date: new Date().toISOString().slice(0, 10), kategori: "", item: "", penghasilan: "", pengeluaran: "", gram: "", akun: "Cash", catatan: "", bulan: MONTHS[new Date().getMonth()], tipe: "Pengeluaran" };
   // Number input handler: keeps raw string so user can type freely, no "01" or "0500" issue
   const numChange = (field) => (e) => setForm({ ...form, [field]: e.target.value });
@@ -19,11 +18,10 @@ export default function InputView({ tx, addTx, addBulkTx, updateTx, deleteTx, se
   const [newKatName, setNewKatName] = useState("");
   const [showOCR, setShowOCR] = useState(false);
   const [ocrLoading, setOcrLoading] = useState(false);
-  const [pendingTransactions, setPendingTransactions] = useState([]);
+  const [ocrPreview, setOcrPreview] = useState([]);
   const [csvText, setCsvText] = useState("");
   const [ocrMode, setOcrMode] = useState("photo");
   const fileRef = useRef(null);
-  const showReview = pendingTransactions.length > 0;
 
   const filtered = useMemo(() => {
     const f = filter.toLowerCase();
@@ -51,23 +49,20 @@ export default function InputView({ tx, addTx, addBulkTx, updateTx, deleteTx, se
   };
   const startEdit = (t) => { setForm({ date: t.date, kategori: t.kategori, item: t.item, penghasilan: t.penghasilan || "", pengeluaran: t.pengeluaran || "", gram: t.gram || "", akun: t.akun, catatan: t.catatan, bulan: t.bulan, tipe: normalizeDebtType(t.tipe) }); setEditId(t.id); setShowForm(true); setShowOCR(false); };
   const cancelEdit = () => { setEditId(null); setForm(empty); setShowForm(false); };
-  // Parse CSV text into array with temp IDs for staging
-  const parseCSV = (text) => { const lines = text.trim().split("\n").filter(l => l.trim()); const parsed = []; for (const line of lines) { const cols = line.split(",").map(c => c.trim()); if (cols.length < 5 || cols[0].toLowerCase() === "tanggal") continue; parsed.push({ _tempId: uid(), date: cols[0] || new Date().toISOString().slice(0, 10), kategori: cols[1] || "", item: cols[2] || "", penghasilan: Number(cols[3]) || 0, pengeluaran: Number(cols[4]) || 0, akun: cols[5] || "Cash", catatan: cols[6] || "", bulan: cols[7] || MONTHS[new Date().getMonth()], tipe: normalizeDebtType(cols[8] || "Pengeluaran") }); } return parsed; };
-  const handleCSVImport = () => { const parsed = parseCSV(csvText); if (parsed.length === 0) return; setPendingTransactions(parsed); };
+  const parseCSV = (text) => { const lines = text.trim().split("\n").filter(l => l.trim()); const parsed = []; for (const line of lines) { const cols = line.split(",").map(c => c.trim()); if (cols.length < 5 || cols[0].toLowerCase() === "tanggal") continue; parsed.push({ date: cols[0] || new Date().toISOString().slice(0, 10), kategori: cols[1] || "", item: cols[2] || "", penghasilan: Number(cols[3]) || 0, pengeluaran: Number(cols[4]) || 0, akun: cols[5] || "Cash", catatan: cols[6] || "", bulan: cols[7] || MONTHS[new Date().getMonth()], tipe: normalizeDebtType(cols[8] || "Pengeluaran") }); } return parsed; };
+  const handleCSVImport = () => { const parsed = parseCSV(csvText); if (parsed.length === 0) return; setOcrPreview(parsed); };
   const handlePhotoUpload = async (e) => {
     const file = e.target.files?.[0]; if (!file) return;
-    const apiKey = settings.anthropicKey; if (!apiKey) { alert("API Key Anthropic belum diisi! Buka Settings dan masukkan API key."); return; }
+    const apiKey = settings.anthropicKey; if (!apiKey) { alert("⚠️ API Key Anthropic belum diisi! Buka Settings → masukkan API key."); return; }
     setOcrLoading(true);
     try {
       const base64 = await new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(r.result.split(",")[1]); r.onerror = () => rej(new Error("Read failed")); r.readAsDataURL(file); });
       const resp = await fetch("/api/ocr", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ image: base64, mediaType: file.type || "image/jpeg", apiKey }) });
       const data = await resp.json();
-      if (data.transactions) setPendingTransactions(data.transactions.map(t => ({ ...t, _tempId: uid() }))); else if (data.error) alert("OCR Error: " + data.error);
+      if (data.transactions) setOcrPreview(data.transactions); else if (data.error) alert("OCR Error: " + data.error);
     } catch (err) { alert("Error: " + err.message); } finally { setOcrLoading(false); if (fileRef.current) fileRef.current.value = ""; }
   };
-  // Finalize: strip _tempId and bulk insert
-  const confirmReview = (cleanedRows) => { addBulkTx(cleanedRows); setPendingTransactions([]); setCsvText(""); setShowOCR(false); };
-  const cancelReview = () => { setPendingTransactions([]); };
+  const confirmPreview = () => { ocrPreview.forEach(t => addTx(t)); setOcrPreview([]); setCsvText(""); setShowOCR(false); };
   
   const handleQuickAddKat = () => {
     const t = newKatName.trim();
@@ -124,18 +119,27 @@ export default function InputView({ tx, addTx, addBulkTx, updateTx, deleteTx, se
               <button onClick={handleCSVImport} className="mt-2 px-5 py-2.5 bg-gradient-to-r from-pink-600 to-pink-500 text-slate-800 rounded-xl font-bold text-sm transition-all hover:from-pink-500 hover:to-pink-400">📋 Parse CSV</button>
             </div>
           )}
+          {ocrPreview.length > 0 && (
+            <div className="mt-4">
+              <p className="text-sm font-bold text-pink-600 mb-2">✅ {ocrPreview.length} transaksi ditemukan:</p>
+              <div className="max-h-60 overflow-y-auto space-y-1">
+                {ocrPreview.map((t,i) => (
+                  <div key={i} className="flex items-center gap-2 px-3 py-1.5 bg-white shadow-sm rounded-lg text-[11px]">
+                    <span className="w-16 text-slate-500 font-mono shrink-0">{t.date?.slice(5)}</span>
+                    <span className="w-16 text-pink-600 font-semibold shrink-0">{t.kategori}</span>
+                    <span className="flex-1 truncate">{t.item}</span>
+                    <span className={`w-16 text-right font-mono font-semibold shrink-0 ${t.pengeluaran > 0 ? 'text-pink-600' : 'text-emerald-600'}`}>{t.pengeluaran > 0 ? `-${fmt(t.pengeluaran)}` : `+${fmt(t.penghasilan)}`}</span>
+                    <button onClick={() => setOcrPreview(prev => prev.filter((_, j) => j !== i))} className="text-pink-600 hover:text-pink-300 text-[10px]">✕</button>
+                  </div>
+                ))}
+              </div>
+              <div className="flex gap-2 mt-3">
+                <button onClick={confirmPreview} className="px-5 py-2.5 bg-gradient-to-r from-pink-600 to-pink-500 text-slate-800 rounded-xl font-bold text-sm hover:from-pink-500 hover:to-pink-400">✅ Simpan Semua ({ocrPreview.length})</button>
+                <button onClick={() => setOcrPreview([])} className="px-4 py-2 bg-pink-500/10 border border-pink-500/20 text-pink-600 rounded-xl text-xs font-semibold">Batal</button>
+              </div>
+            </div>
+          )}
         </Card>
-      )}
-
-      {/* Review & Edit Table — shown after CSV parse or OCR */}
-      {showReview && (
-        <TransactionReviewTable
-          pending={pendingTransactions}
-          setPending={setPendingTransactions}
-          onConfirm={confirmReview}
-          onCancel={cancelReview}
-          lists={lists}
-        />
       )}
 
       {/* Manual Form */}

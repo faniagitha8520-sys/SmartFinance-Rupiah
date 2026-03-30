@@ -133,7 +133,6 @@ export default function App() {
   }, [tx, settings, akunList, akunVirtual, akunReal, kategoriSpending]);
 
   const addTx = useCallback((newTx) => { setTx(prev => [...prev, { ...newTx, id: uid() }]); }, []);
-  const addBulkTx = useCallback((rows) => { setTx(prev => [...prev, ...rows.map(r => ({ ...r, id: uid() }))]); }, []);
   const updateTx = useCallback((id, updated) => { setTx(prev => prev.map(t => t.id === id ? { ...t, ...updated } : t)); }, []);
   const deleteTx = useCallback((id) => { setTx(prev => prev.filter(t => t.id !== id)); }, []);
   const resetData = useCallback(() => { setTx(INITIAL_TX.map(t => ({ ...t, id: uid() }))); setSettings(DEFAULT_SETTINGS); }, []);
@@ -182,7 +181,7 @@ export default function App() {
     switch (tab) {
       case "dashboard": return <><DashboardView c={computed} lists={lists} settings={settings} /><div className="mt-6"><MonthlyChart monthStats={computed.monthStats} /></div></>;
       case "analisis": return <AnalisisView c={computed} lists={lists} />;
-      case "input": return <InputView tx={tx} addTx={addTx} addBulkTx={addBulkTx} updateTx={updateTx} deleteTx={deleteTx} settings={settings} lists={lists} />;
+      case "input": return <InputView tx={tx} addTx={addTx} updateTx={updateTx} deleteTx={deleteTx} settings={settings} lists={lists} />;
       case "saldo": return <SaldoView c={computed} lists={lists} settings={settings} />;
       case "darurat": return <DanaView c={computed} settings={settings} setSettings={setSettings} />;
       case "hutang": return <HutangView c={computed} tx={tx} />;

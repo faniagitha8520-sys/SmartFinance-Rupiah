@@ -1,0 +1,80 @@
+{
+  "pin": "",
+  "budgets": {
+    "Hobi": 1000,
+    "Jajan": 3000,
+    "Rokok": 3000,
+    "Gadget": 3000,
+    "Pakaian": 0,
+    "Perabot": 0,
+    "Logistik": 3000,
+    "Admin/Tax": 0,
+    "Kendaraan": 0,
+    "Lain-lain": 0,
+    "Transport": 1000,
+    "Komunikasi": 0,
+    "Olahraga/Gym": 0,
+    "Ongkos Kirim": 0,
+    "Subscription": 1000,
+    "Makan di Luar": 1500,
+    "Donasi/Sedekah": 0,
+    "Kesehatan/Obat": 0,
+    "Perawatan Diri": 3000,
+    "Hadiah/Oleh-oleh": 0,
+    "Pendidikan/Kursus": 0,
+    "Biaya Visa/Dokumen": 0,
+    "Wisata/Jalan-jalan": 0
+  },
+  "akunList": [
+    "Cash",
+    "Yucho Bank",
+    "ICOCA",
+    "Everica",
+    "Wise",
+    "PayPay",
+    "Self Reward",
+    "Dana Darurat",
+    "Kirim Indonesia"
+  ],
+  "kirimIndo": {
+    "kursJPYIDR": 106,
+    "kursTarget": 110,
+    "targetKirimIDR": 4000000
+  },
+  "akunVirtual": [
+    "Dana Darurat",
+    "Kirim Indonesia"
+  ],
+  "danaDarurat": {
+    "saldoAwal": 0,
+    "targetBulan": 3,
+    "pengeluaranBulanan": 71179
+  },
+  "anthropicKey": "",
+  "potonganRutin": 51500,
+  "kategoriSpending": [
+    "Rokok",
+    "Jajan",
+    "Logistik",
+    "Transport",
+    "Hobi",
+    "Komunikasi",
+    "Subscription",
+    "Admin/Tax",
+    "Gadget",
+    "Perabot",
+    "Pakaian",
+    "Kesehatan/Obat",
+    "Perawatan Diri",
+    "Olahraga/Gym",
+    "Makan di Luar",
+    "Kendaraan",
+    "Pendidikan/Kursus",
+    "Hadiah/Oleh-oleh",
+    "Ongkos Kirim",
+    "Biaya Visa/Dokumen",
+    "Wisata/Jalan-jalan",
+    "Donasi/Sedekah",
+    "Lain-lain"
+  ]
+}
